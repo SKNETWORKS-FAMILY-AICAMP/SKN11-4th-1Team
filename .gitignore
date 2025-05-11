@@ -6,7 +6,7 @@
 ########## Custom
 *.env
 data/*/split/
-chroma_db/
+vectordb/
 ##########
 
 
