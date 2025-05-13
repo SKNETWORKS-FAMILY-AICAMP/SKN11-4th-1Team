@@ -1,2 +1,2 @@
-# temp
-임시 저장소
+# SKN11-3rd-1Team
+
