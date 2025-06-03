@@ -50,7 +50,7 @@ class BaseModel(models.Model):
         abstract = True
 
 
-# ============= AI/데이터 모델들 (리더만 사용) =============
+# ============= AI/데이터 모델들  =============
 
 class AccidentCase(BaseModel):
     """교통사고 사례 데이터베이스 (AI 학습용)"""
@@ -83,7 +83,7 @@ class AccidentCase(BaseModel):
         ordering = ['-created_at']
 
 
-# ============= 채팅 모델들 (리더만 사용) =============
+# ============= 채팅 모델들 =============
 
 class ChatSession(BaseModel):
     """채팅 세션 관리"""
@@ -154,7 +154,7 @@ class ChatMessage(BaseModel):
         ordering = ['created_at']
 
 
-# ============= 커뮤니티 모델들 (팀원들이 사용) =============
+# ============= 커뮤니티 모델들 =============
 
 class Category(BaseModel):
     """게시글 카테고리"""
