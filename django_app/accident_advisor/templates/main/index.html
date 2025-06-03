@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}메인 채팅 - 노느{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        height: 80vh;
+        display: flex;
+    }
+    
+    .chat-sidebar {
+        width: 300px;
+        background-color: #f8f9fa;
+        border-right: 1px solid #dee2e6;
+        overflow-y: auto;
+    }
+    
+    .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background-color: #ffffff;
+    }
+    
+    .chat-input-area {
+        padding: 20px;
+        border-top: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+    }
+    
+    .message {
+        margin-bottom: 15px;
+        display: flex;
+    }
+    
+    .message.user {
+        justify-content: flex-end;
+    }
+    
+    .message.bot {
+        justify-content: flex-start;
+    }
+    
+    .message-bubble {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        word-wrap: break-word;
+    }
+    
+    .message.user .message-bubble {
+        background-color: #007bff;
+        color: white;
+        margin-left: auto;
+    }
+    
+    .message.bot .message-bubble {
+        background-color: #e9ecef;
+        color: #333;
+        margin-right: auto;
+    }
+    
+    .session-item {
+        padding: 12px 16px;
+        border-bottom: 1px solid #dee2e6;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .session-item:hover {
+        background-color: #e9ecef;
+    }
+    
+    .session-item.active {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .session-title {
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+    
+    .session-time {
+        font-size: 0.85em;
+        opacity: 0.7;
+    }
+    
+    @media (max-width: 768px) {
+        .chat-sidebar {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="chat-container">
+        <!-- 사이드바 - 채팅 히스토리 -->
+        <div class="chat-sidebar">
+            <div class="p-3 border-bottom">
+                <h5 class="mb-0">채팅 기록</h5>
+                <button class="btn btn-primary btn-sm mt-2" id="newChatBtn">
+                    <i class="bi bi-plus"></i> 새 상담 시작
+                </button>
+            </div>
+            
+            <div class="session-list">
+                {% for session in recent_sessions %}
+                <div class="session-item" data-session-id="{{ session.session_id }}">
+                    <div class="session-title">{{ session.title }}</div>
+                    <div class="session-time">
+                        {{ session.updated_at|date:"m월 d일 H:i" }}
+                        ({{ session.message_count }}개 메시지)
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-3 text-muted text-center">
+                    <i class="bi bi-chat"></i><br>
+                    아직 상담 기록이 없습니다.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- 메인 채팅 영역 -->
+        <div class="chat-main">
+            <!-- 채팅 메시지 영역 -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-chat-dots fs-1"></i>
+                    <h4 class="mt-3">교통사고 상담 챗봇 노느</h4>
+                    <p>교통사고 상황을 알려주시면 과실비율을 분석해드립니다.</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card example-card" onclick="sendExampleMessage('교차로에서 좌회전하다가 직진차와 충돌했어요')">
+                                <div class="card-body text-start">
+                                    <h6 class="card-title">🚗 교차로 사고</h6>
+                                    <p class="card-text small">교차로에서 좌회전하다가 직진차와 충돌했어요</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card example-card" onclick="sendExampleMessage('주차장에서 후진하다가 다른 차와 접촉했어요')">
+                                <div class="card-body text-start">
+                                    <h6 class="card-title">🅿️ 주차장 사고</h6>
+                                    <p class="card-text small">주차장에서 후진하다가 다른 차와 접촉했어요</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 메시지 입력 영역 -->
+            <div class="chat-input-area">
+                <div class="input-group">
+                    <textarea 
+                        class="form-control" 
+                        id="messageInput" 
+                        placeholder="교통사고 상황을 자세히 설명해주세요..."
+                        rows="2"></textarea>
+                    <button class="btn btn-primary" id="sendBtn" type="button">
+                        <i class="bi bi-send"></i> 전송
+                    </button>
+                </div>
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i> 
+                    더 정확한 분석을 위해 사고 위치, 신호등 상황, 각 차량의 행동을 구체적으로 알려주세요.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentSessionId = null;
+
+// 메시지 전송
+$('#sendBtn').click(sendMessage);
+$('#messageInput').keypress(function(e) {
+    if (e.which == 13 && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+// 새 채팅 시작
+$('#newChatBtn').click(function() {
+    currentSessionId = null;
+    $('#chatMessages').html(`
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-chat-dots fs-1"></i>
+            <h4 class="mt-3">새로운 상담을 시작합니다</h4>
+            <p>교통사고 상황을 알려주시면 과실비율을 분석해드립니다.</p>
+        </div>
+    `);
+    $('.session-item').removeClass('active');
+});
+
+// 예시 메시지 전송
+function sendExampleMessage(message) {
+    $('#messageInput').val(message);
+    sendMessage();
+}
+
+// 메시지 전송 함수
+function sendMessage() {
+    const message = $('#messageInput').val().trim();
+    if (!message) return;
+    
+    // 사용자 메시지 표시
+    addMessage(message, 'user');
+    $('#messageInput').val('');
+    
+    // 봇 응답 대기 표시
+    addMessage('분석 중입니다...', 'bot', true);
+    
+    // API 호출
+    $.ajax({
+        url: '{% url "main:send_message" %}',
+        method: 'POST',
+        data: JSON.stringify({
+            message: message,
+            session_id: currentSessionId
+        }),
+        contentType: 'application/json',
+        success: function(response) {
+            if (response.success) {
+                // 대기 메시지 제거
+                $('.message.bot:last').remove();
+                
+                // 봇 응답 표시
+                addMessage(response.bot_response, 'bot');
+                
+                // 세션 ID 업데이트
+                currentSessionId = response.session_id;
+                
+                // 사이드바 업데이트 (필요시)
+                updateSidebar(response.session_title);
+            } else {
+                $('.message.bot:last').remove();
+                addMessage('죄송합니다. 오류가 발생했습니다.', 'bot');
+            }
+        },
+        error: function() {
+            $('.message.bot:last').remove();
+            addMessage('네트워크 오류가 발생했습니다.', 'bot');
+        }
+    });
+}
+
+// 메시지 추가 함수
+function addMessage(content, sender, isLoading = false) {
+    const messageClass = sender === 'user' ? 'user' : 'bot';
+    const loadingClass = isLoading ? 'loading' : '';
+    
+    const messageHtml = `
+        <div class="message ${messageClass} ${loadingClass}">
+            <div class="message-bubble">
+                ${isLoading ? '<i class="bi bi-three-dots"></i> ' + content : content}
+            </div>
+        </div>
+    `;
+    
+    $('#chatMessages').append(messageHtml);
+    $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+}
+
+// 사이드바 업데이트
+function updateSidebar(title) {
+    // 새 세션이면 사이드바에 추가
+    // (실제로는 페이지 새로고침 또는 AJAX로 업데이트)
+}
+
+// 채팅 히스토리 로드
+$('.session-item').click(function() {
+    const sessionId = $(this).data('session-id');
+    loadChatHistory(sessionId);
+    
+    $('.session-item').removeClass('active');
+    $(this).addClass('active');
+});
+
+// 채팅 히스토리 로드 함수
+function loadChatHistory(sessionId) {
+    currentSessionId = sessionId;
+    
+    $.ajax({
+        url: `/api/chat-history/${sessionId}/`,
+        method: 'GET',
+        success: function(response) {
+            if (response.success) {
+                $('#chatMessages').empty();
+                
+                response.messages.forEach(function(msg) {
+                    addMessage(msg.content, msg.sender);
+                });
+            }
+        },
+        error: function() {
+            alert('채팅 기록을 불러올 수 없습니다.');
+        }
+    });
+}
+</script>
+{% endblock %}
