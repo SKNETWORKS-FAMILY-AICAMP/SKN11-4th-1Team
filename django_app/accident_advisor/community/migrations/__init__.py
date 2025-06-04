@@ -1,0 +1,1 @@
+# migrations 패키지를 위한 __init__.py 파일
