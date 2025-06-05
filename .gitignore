@@ -6,7 +6,9 @@
 ########## Custom
 *.env
 data/*/split/
-*db/
+chroma_db/
+vector_db/
+**/migrations/
 ##########
 
 
