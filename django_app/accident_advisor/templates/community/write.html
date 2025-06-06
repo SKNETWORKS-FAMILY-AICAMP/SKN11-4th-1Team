@@ -502,6 +502,7 @@
         </div>
 
         <form id="postForm" onsubmit="submitPost(event)">
+            {% csrf_token %}
             <!-- 게시글 유형 선택 -->
             <div class="post-item">
                 <h3>📝 게시글 유형</h3>
@@ -509,21 +510,21 @@
                     <div class="post-type-option">
                         <input type="radio" id="type_general" name="post_type" value="general" class="post-type-radio" checked>
                         <label for="type_general" class="post-type-label">
-                            <div class="post-type-title">💬 Experience</div>
-                            <div class="post-type-desc">여러분의 경험을 들려주세요</div>
+                            <div class="post-type-title">💬 일반 게시글</div>
+                            <div class="post-type-desc">자유로운 주제로 이야기를 나눠보세요</div>
                         </label>
                     </div>
                     <div class="post-type-option">
                         <input type="radio" id="type_question" name="post_type" value="question" class="post-type-radio">
                         <label for="type_question" class="post-type-label">
-                            <div class="post-type-title">❓ Question</div>
+                            <div class="post-type-title">❓ 질문</div>
                             <div class="post-type-desc">궁금한 것을 물어보세요</div>
                         </label>
                     </div>
                     <div class="post-type-option">
                         <input type="radio" id="type_tip" name="post_type" value="tip" class="post-type-radio">
                         <label for="type_tip" class="post-type-label">
-                            <div class="post-type-title">💡 Tips</div>
+                            <div class="post-type-title">💡 팁 & 노하우</div>
                             <div class="post-type-desc">유용한 정보를 공유해주세요</div>
                         </label>
                     </div>
@@ -532,21 +533,28 @@
 
             <!-- 카테고리 선택 -->
             <div class="post-item">
-                <h3>🏷️ 카테고리 선택 <span class="required">*</span></h3>
-                <div class="category-filter">
-                    <button type="button" class="category-btn" data-category="{{% name &}}">{{% icon %}}{{% name %}}</button>
-                    <button type="button" class="category-btn" data-category="backend">백엔드</button>
-                    <button type="button" class="category-btn" data-category="mobile">모바일</button>
-                    <button type="button" class="category-btn" data-category="database">데이터베이스</button>
-                    <button type="button" class="category-btn" data-category="devops">DevOps</button>
-                    <button type="button" class="category-btn" data-category="ai">AI/ML</button>
-                    <button type="button" class="category-btn" data-category="career">커리어</button>
-                    <button type="button" class="category-btn" data-category="review">리뷰</button>
-                    <button type="button" class="category-btn" data-category="free">자유</button>
-                </div>
-                <input type="hidden" id="selectedCategory" name="category" required>
+    <h3>🏷️ 카테고리 선택 <span class="required">*</span></h3>
+    <div class="category-filter">
+        {% for category in categories %}
+            <button type="button" class="category-btn" 
+                    data-category="{{ category.name }}" 
+                    data-id="{{ category.id }}"
+                    title="{{ category.description }}">
+                {{ category.name }}
+                {% if category.post_count > 0 %}
+                    <span class="post-count">({{ category.post_count }})</span>
+                {% endif %}
+            </button>
+        {% empty %}
+            <div class="no-categories">
+                <p>등록된 카테고리가 없습니다.</p>
+                <p><small>관리자에게 문의하세요.</small></p>
             </div>
-
+        {% endfor %}
+    </div>
+    <input type="hidden" id="selectedCategory" name="category" required>
+    <input type="hidden" id="selectedCategoryId" name="category_id">
+</div>
             <!-- 제목 입력 -->
             <div class="post-item">
                 <h3>📄 게시글 정보</h3>
@@ -557,6 +565,7 @@
                                placeholder="게시글 제목을 입력해주세요" maxlength="100" required>
                         <div class="char-counter" id="titleCounter">0 / 100</div>
                     </div>
+                
                 </div>
             </div>
 
@@ -605,7 +614,7 @@
                     </div>
                 </div>
             </div>
-
+        </form>
             <!-- 폼 액션 버튼 -->
             <div class="form-actions">
                 <button type="button" class="btn-secondary" onclick="goBack()">
@@ -632,18 +641,20 @@
 
         // 태그 추천 목록
         const tagSuggestions = [
-            'JavaScript', 'React', 'Vue', 'Angular', 'Node.js', 'Python', 'Java', 'Spring',
-            'TypeScript', 'CSS', 'HTML', 'Algorithm', 'Database', 'MySQL', 'MongoDB',
-            'AWS', 'Docker', 'Kubernetes', 'Git', 'Career', 'Interview', 'Study'
+            // 교통사고 관련
+            '교차로', '사고', '과실비율', '보험', '합의', '치료비', '위자료',
+            '블랙박스', '목격자', '경찰서', '사고처리', '차량손상',
+            
+            // 법률 관련  
+            '법률상담', '소송', '변호사', '법원', '판례', '민사', '형사',
+            '손해배상', '합의서', '진술서',
+            
+            // 차량 관련
+            '자동차', '오토바이', '자전거', '보행자', '버스', '택시', '트럭',
+            
+            // 기타
+            '질문', '경험담', '팁', '도움요청', '정보공유'
         ];
-
-        // 글 내용 db에 저장
-
-        // 글 제목 db에 저장
-
-        // 작성자
-
-        //
 
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
@@ -866,5 +877,214 @@
                 if (data.type) {
                     document.querySelector(`input[value="${data.type}"]`).checked = true;
                 }
+                
+                // 제목과 내용 설정
+                document.getElementById('postTitle').value = data.title || '';
+                document.getElementById('postContent').value = data.content || '';
+                
+                // 태그 설정
+                tags = data.tags || [];
+                renderTags();
+                
+                // 카테고리 설정
+                if (data.category) {
+                    const categoryBtn = document.querySelector(`[data-category="${data.category}"]`);
+                    if (categoryBtn) {
+                        categoryBtn.click();
+                    }
+                }
+                
+                // 글자수 카운터 업데이트
+                const titleEvent = new Event('input');
+                const contentEvent = new Event('input');
+                document.getElementById('postTitle').dispatchEvent(titleEvent);
+                document.getElementById('postContent').dispatchEvent(contentEvent);
+                
+                showNotification('임시저장된 내용을 불러왔습니다.');
             }
         }
+
+        // 임시저장 확인
+        function checkForDraft() {
+            if (localStorage.getItem('postDraft')) {
+                if (confirm('임시저장된 게시글이 있습니다. 불러오시겠습니까?')) {
+                    loadDraft();
+                }
+            }
+        }
+
+        // 게시글 제출
+        function submitPost(event) {
+            event.preventDefault();
+            
+            // 유효성 검사
+            if (!selectedCategory) {
+                showNotification('카테고리를 선택해주세요!', 'error');
+                return;
+            }
+            
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+            
+            if (!title) {
+                showNotification('제목을 입력해주세요!', 'error');
+                document.getElementById('postTitle').focus();
+                return;
+            }
+            
+            if (!content) {
+                showNotification('내용을 입력해주세요!', 'error');
+                document.getElementById('postContent').focus();
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+            
+            // 버튼 비활성화
+            submitBtn.disabled = true;
+            submitBtn.textContent = '등록 중...';
+            
+            // 폼 데이터 준비
+            const postData = {
+                type: document.querySelector('input[name="post_type"]:checked').value,
+                category: selectedCategory,
+                title: title,
+                content: content,
+                tags: tags
+            };
+            
+            // 서버로 전송
+            fetch(window.location.pathname, {  // 현재 URL로 전송
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(postData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 임시저장 데이터 삭제
+                    localStorage.removeItem('postDraft');
+                    showNotification(data.message);
+                    
+                    // 게시글 상세 페이지로 이동
+                    setTimeout(() => {
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            window.location.href = `/community/detail/${data.post_id}/`;
+                        }
+                    }, 1500);
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('게시글 등록 중 오류가 발생했습니다.', 'error');
+            })
+            .finally(() => {
+                // 버튼 복원
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            });
+        }
+
+        // 임시저장 데이터 구조도 마이그레이션에 맞게 수정
+        function saveDraft() {
+            const formData = new FormData(document.getElementById('postForm'));
+            const draftData = {
+                type: document.querySelector('input[name="post_type"]:checked').value,
+                category: selectedCategory,
+                title: document.getElementById('postTitle').value,
+                content: document.getElementById('postContent').value,
+                tags: tags,
+                timestamp: new Date().toISOString()
+            };
+            
+            localStorage.setItem('postDraft', JSON.stringify(draftData));
+            showNotification('임시저장되었습니다!');
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        // 취소
+        function goBack() {
+            const hasContent = document.getElementById('postTitle').value.trim() || 
+                             document.getElementById('postContent').value.trim() || 
+                             tags.length > 0;
+                             
+            if (hasContent && confirm('작성 중인 내용이 있습니다. 정말 나가시겠습니까?')) {
+                showNotification('이전 페이지로 이동합니다...');
+                // 실제 환경에서는: window.history.back();
+            } else if (!hasContent) {
+                showNotification('이전 페이지로 이동합니다...');
+                // 실제 환경에서는: window.history.back();
+            }
+        }
+
+        // 알림 메시지 표시
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type === 'error' ? 'error' : ''}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 페이지 이탈 시 경고
+        window.addEventListener('beforeunload', function(event) {
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+            
+            if (title || content || tags.length > 0) {
+                event.preventDefault();
+                event.returnValue = '작성 중인 내용이 있습니다. 정말 나가시겠습니까?';
+            }
+        });
+
+        // 자동 저장 (5분마다)
+        setInterval(() => {
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+            
+            if (title || content || tags.length > 0) {
+                saveDraft();
+            }
+        }, 300000); // 5분
+
+        // 키보드 단축키
+        document.addEventListener('keydown', function(event) {
+            // Ctrl+S: 임시저장
+            if (event.ctrlKey && event.key === 's') {
+                event.preventDefault();
+                saveDraft();
+            }
+            
+            // Ctrl+Enter: 게시글 등록
+            if (event.ctrlKey && event.key === 'Enter') {
+                event.preventDefault();
+                document.getElementById('postForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html>

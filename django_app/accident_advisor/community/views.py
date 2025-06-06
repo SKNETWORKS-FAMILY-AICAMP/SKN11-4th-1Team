@@ -15,121 +15,228 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from core.models import Post, Comment, Category, PostLike, CommentLike
 from .forms import PostForm, CommentForm
 
+import json
 
-def post_list(request):
-    """
-    게시글 목록 페이지 (팀원 B 담당)
+
+@login_required
+def post_create(request):
+    """게시글 작성 페이지"""
     
-    📋 팀원 B 할 일:
-    - templates/community/list.html 파일 작성
-    - 게시글 목록 표시
-    - 카테고리별 필터링
-    - 검색 기능
-    - 페이지네이션
-    """
-    # 모든 카테고리 가져오기
-    categories = Category.objects.all()
+    if request.method == 'POST':
+        # AJAX 요청 처리
+        if request.headers.get('Content-Type') == 'application/json':
+            try:
+                data = json.loads(request.body)
+                
+                # 필수 필드 검증
+                title = data.get('title', '').strip()
+                content = data.get('content', '').strip()
+                category_name = data.get('category', '').strip()
+                post_type = data.get('type', 'question')
+                
+                # 유효성 검사
+                if not title:
+                    return JsonResponse({
+                        'success': False,
+                        'error': '제목을 입력해주세요.'
+                    })
+                
+                if len(title) < 5:
+                    return JsonResponse({
+                        'success': False,
+                        'error': '제목은 최소 5자 이상이어야 합니다.'
+                    })
+                
+                if not content:
+                    return JsonResponse({
+                        'success': False,
+                        'error': '내용을 입력해주세요.'
+                    })
+                
+                if len(content) < 10:
+                    return JsonResponse({
+                        'success': False,
+                        'error': '내용은 최소 10자 이상이어야 합니다.'
+                    })
+                
+                if not category_name:
+                    return JsonResponse({
+                        'success': False,
+                        'error': '카테고리를 선택해주세요.'
+                    })
+                
+                # 카테고리 검증
+                try:
+                    category = Category.objects.get(name=category_name, is_active=True)
+                except Category.DoesNotExist:
+                    return JsonResponse({
+                        'success': False,
+                        'error': '유효하지 않은 카테고리입니다.'
+                    })
+                
+                # 게시글 유형 검증
+                valid_types = ['question', 'experience', 'tip']
+                if post_type not in valid_types:
+                    post_type = 'question'
+                
+                # 태그 처리
+                tags_list = data.get('tags', [])
+                tags_string = ','.join(tags_list) if tags_list else ''
+                
+                # 게시글 생성
+                post = Post.objects.create(
+                    title=title,
+                    content=content,
+                    author=request.user,
+                    category=category,
+                    post_type=post_type,
+                    tags=tags_string,
+                    is_active=True
+                )
+                
+                # 카테고리 게시글 수 업데이트 (related_name 변경에 따른 수정)
+                category.post_count = category.community_posts.filter(is_active=True).count()
+                category.save(update_fields=['post_count'])
+                
+                return JsonResponse({
+                    'success': True,
+                    'post_id': post.id,
+                    'message': '게시글이 성공적으로 작성되었습니다.',
+                    'redirect_url': f'/community/detail/{post.id}/'
+                })
+                
+            except json.JSONDecodeError:
+                return JsonResponse({
+                    'success': False,
+                    'error': '잘못된 요청 형식입니다.'
+                })
+            except Exception as e:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'게시글 작성 중 오류가 발생했습니다: {str(e)}'
+                })
+        
+        # 일반 폼 제출 처리
+        else:
+            try:
+                title = request.POST.get('title', '').strip()
+                content = request.POST.get('content', '').strip()
+                category_name = request.POST.get('category', '').strip()
+                post_type = request.POST.get('post_type', 'question')
+                tags = request.POST.get('tags', '').strip()
+                
+                # 유효성 검사
+                if not all([title, content, category_name]):
+                    messages.error(request, '모든 필수 항목을 입력해주세요.')
+                    return redirect('community:write')
+                
+                category = get_object_or_404(Category, name=category_name, is_active=True)
+                
+                post = Post.objects.create(
+                    title=title,
+                    content=content,
+                    author=request.user,
+                    category=category,
+                    post_type=post_type,
+                    tags=tags,
+                    is_active=True
+                )
+                
+                # 카테고리 게시글 수 업데이트
+                category.post_count = category.community_posts.filter(is_active=True).count()
+                category.save(update_fields=['post_count'])
+                
+                messages.success(request, '게시글이 작성되었습니다.')
+                return redirect('community:detail', post_id=post.id)
+                
+            except Exception as e:
+                messages.error(request, f'게시글 작성에 실패했습니다: {str(e)}')
+                return redirect('community:write')
     
-    # 기본 게시글 목록
-    posts = Post.objects.filter(is_active=True).select_related('author', 'category')
+    # GET 요청 - 페이지 렌더링
+    categories = Category.objects.filter(is_active=True).order_by('order', 'name')
     
-    # 카테고리 필터링
-    category_id = request.GET.get('category')
-    if category_id:
-        posts = posts.filter(category_id=category_id)
-    
-    # 검색 기능
-    search_query = request.GET.get('search', '').strip()
-    if search_query:
-        posts = posts.filter(
-            Q(title__icontains=search_query) | 
-            Q(content__icontains=search_query) |
-            Q(tags__icontains=search_query)
-        )
-    
-    # 정렬 (최신순)
-    posts = posts.order_by('-created_at')
-    
-    # 페이지네이션 (한 페이지에 10개)
-    paginator = Paginator(posts, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    # 각 카테고리의 커뮤니티 게시글 수를 미리 계산
+    for category in categories:
+        category.community_post_count = category.community_posts.filter(is_active=True).count()
     
     context = {
         'categories': categories,
-        'posts': page_obj,
-        'search_query': search_query,
-        'selected_category': int(category_id) if category_id else None,
-        'title': '커뮤니티'
+        'title': '게시글 작성',
+        'post_types': Post.POST_TYPE_CHOICES
     }
-    
-    return render(request, 'community/list.html', context)
+    return render(request, 'community/write.html', context)
 
+@require_http_methods(["GET"])
+def category_list_api(request):
+    """카테고리 목록 API"""
+    try:
+        categories = Category.objects.filter(is_active=True).order_by('order', 'name')
+        
+        categories_data = []
+        for category in categories:
+            # 커뮤니티 게시글 수 계산 (related_name 변경에 따른 수정)
+            community_post_count = category.community_posts.filter(is_active=True).count()
+            
+            categories_data.append({
+                'id': category.id,
+                'name': category.name,
+                'description': category.description,
+                'post_count': community_post_count,
+                'order': category.order
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'categories': categories_data
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 def post_detail(request, post_id):
-    """
-    게시글 상세 페이지 (팀원 C 담당)
-    
-    📋 팀원 C 할 일:
-    - templates/community/detail.html 파일 작성
-    - 게시글 상세 내용 표시
-    - 댓글 목록 표시
-    - 댓글 작성 폼
-    - 좋아요 버튼
-    """
-    # 게시글 가져오기
+    """게시글 상세 보기"""
     post = get_object_or_404(Post, id=post_id, is_active=True)
     
     # 조회수 증가
     post.view_count += 1
-    post.save()
-    
-    # 댓글 목록 가져오기
-    comments = Comment.objects.filter(
-        post=post, 
-        is_active=True
-    ).select_related('author').order_by('created_at')
-    
-    # 댓글 작성 처리
-    if request.method == 'POST' and request.user.is_authenticated:
-        comment_form = CommentForm(request.POST)
-        if comment_form.is_valid():
-            comment = comment_form.save(commit=False)
-            comment.post = post
-            comment.author = request.user
-            comment.save()
-            
-            # 댓글 수 업데이트
-            post.comment_count = post.comments.filter(is_active=True).count()
-            post.save()
-            
-            messages.success(request, '댓글이 작성되었습니다.')
-            return redirect('community:detail', post_id=post.id)
-        else:
-            messages.error(request, '댓글 작성에 실패했습니다.')
-    else:
-        comment_form = CommentForm()
-    
-    # 사용자의 좋아요 여부 확인
-    user_liked = False
-    if request.user.is_authenticated:
-        user_liked = PostLike.objects.filter(user=request.user, post=post).exists()
+    post.save(update_fields=['view_count'])
     
     context = {
         'post': post,
-        'comments': comments,
-        'comment_form': comment_form,
-        'user_liked': user_liked,
-        'title': post.title
+        'tags': post.get_tags_list()
     }
-    
     return render(request, 'community/detail.html', context)
 
+def post_list(request):
+    """게시글 목록"""
+    posts = Post.objects.filter(is_active=True).select_related('author', 'category')
+    
+    # 카테고리 필터링
+    category_name = request.GET.get('category')
+    if category_name:
+        posts = posts.filter(category__name=category_name)
+    
+    # 게시글 유형 필터링
+    post_type = request.GET.get('type')
+    if post_type in ['question', 'experience', 'tip']:
+        posts = posts.filter(post_type=post_type)
+    
+    context = {
+        'posts': posts,
+        'categories': Category.objects.filter(is_active=True),
+        'current_category': category_name,
+        'current_type': post_type
+    }
+    return render(request, 'community/list.html', context)
 
 @login_required
 def post_create(request):
