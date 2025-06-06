@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글 작성 - 커뮤니티</title>
+    <style>
+        /* 프로젝트 기존 CSS 변수 및 기본 스타일 */
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* 기존 프로젝트 클래스들 */
+        .auth-container {
+            max-width: 900px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h2 {
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .auth-header p {
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        .post-item {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .post-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .post-item h3 {
+            color: var(--dark-color);
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-filter {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .category-btn {
+            background: var(--light-color);
+            border: 2px solid transparent;
+            border-radius: 25px;
+            padding: 8px 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .category-btn:hover {
+            border-color: var(--primary-color);
+            background: rgba(0, 123, 255, 0.1);
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .category-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: white;
+            padding: 12px 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .like-btn {
+            background: none;
+            border: 2px solid var(--danger-color);
+            color: var(--danger-color);
+            border-radius: 25px;
+            padding: 8px 20px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .like-btn:hover {
+            background: var(--danger-color);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .auth-form {
+            background: var(--light-color);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 15px;
+        }
+
+        .auth-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .auth-form label {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        .form-control.textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        /* 추가 스타일 */
+        .required {
+            color: var(--danger-color);
+        }
+
+        .post-type-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .post-type-option {
+            position: relative;
+        }
+
+        .post-type-radio {
+            display: none;
+        }
+
+        .post-type-label {
+            display: block;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            background: white;
+        }
+
+        .post-type-radio:checked + .post-type-label {
+            border-color: var(--primary-color);
+            background: rgba(0, 123, 255, 0.1);
+        }
+
+        .post-type-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+        }
+
+        .post-type-desc {
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+            margin-top: 5px;
+        }
+
+        .char-counter.warning {
+            color: var(--warning-color);
+        }
+
+        .char-counter.danger {
+            color: var(--danger-color);
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 10px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-btn {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--light-color);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .tags-input-container {
+            position: relative;
+        }
+
+        .tags-display {
+            min-height: 50px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: flex-start;
+            background: white;
+            cursor: text;
+            transition: all 0.3s ease;
+        }
+
+        .tags-display:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .tag-item {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+        }
+
+        .tag-remove {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .tag-remove:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tag-input {
+            border: none;
+            outline: none;
+            padding: 8px;
+            font-size: 1rem;
+            flex: 1;
+            min-width: 120px;
+            background: transparent;
+        }
+
+        .tag-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .tag-suggestion {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f1f1;
+            transition: background 0.2s ease;
+        }
+
+        .tag-suggestion:hover {
+            background: var(--light-color);
+        }
+
+        .tag-suggestion:last-child {
+            border-bottom: none;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            padding-top: 30px;
+            border-top: 2px solid #e9ecef;
+            margin-top: 30px;
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .preview-mode {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 200px;
+            line-height: 1.6;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: var(--success-color);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            font-weight: 500;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: var(--danger-color);
+        }
+
+        /* 애니메이션 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .auth-container {
+                margin: 20px;
+                padding: 30px 20px;
+            }
+
+            .post-type-group {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .toolbar {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            body {
+                padding: 10px;
+            }
+
+            .post-item {
+                padding: 15px;
+            }
+
+            .auth-form {
+                padding: 20px;
+            }
+
+            .toolbar {
+                gap: 5px;
+            }
+
+            .toolbar-btn {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container fade-in">
+        <!-- 페이지 헤더 -->
+        <div class="auth-header">
+            <h2>✍️ 새 게시글 작성</h2>
+            <p>커뮤니티에 새로운 이야기를 공유해보세요</p>
+        </div>
+
+        <form id="postForm" onsubmit="submitPost(event)">
+            <!-- 게시글 유형 선택 -->
+            <div class="post-item">
+                <h3>📝 게시글 유형</h3>
+                <div class="post-type-group">
+                    <div class="post-type-option">
+                        <input type="radio" id="type_general" name="post_type" value="general" class="post-type-radio" checked>
+                        <label for="type_general" class="post-type-label">
+                            <div class="post-type-title">💬 Experience</div>
+                            <div class="post-type-desc">여러분의 경험을 들려주세요</div>
+                        </label>
+                    </div>
+                    <div class="post-type-option">
+                        <input type="radio" id="type_question" name="post_type" value="question" class="post-type-radio">
+                        <label for="type_question" class="post-type-label">
+                            <div class="post-type-title">❓ Question</div>
+                            <div class="post-type-desc">궁금한 것을 물어보세요</div>
+                        </label>
+                    </div>
+                    <div class="post-type-option">
+                        <input type="radio" id="type_tip" name="post_type" value="tip" class="post-type-radio">
+                        <label for="type_tip" class="post-type-label">
+                            <div class="post-type-title">💡 Tips</div>
+                            <div class="post-type-desc">유용한 정보를 공유해주세요</div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 카테고리 선택 -->
+            <div class="post-item">
+                <h3>🏷️ 카테고리 선택 <span class="required">*</span></h3>
+                <div class="category-filter">
+                    <button type="button" class="category-btn" data-category="{{% name &}}">{{% icon %}}{{% name %}}</button>
+                    <button type="button" class="category-btn" data-category="backend">백엔드</button>
+                    <button type="button" class="category-btn" data-category="mobile">모바일</button>
+                    <button type="button" class="category-btn" data-category="database">데이터베이스</button>
+                    <button type="button" class="category-btn" data-category="devops">DevOps</button>
+                    <button type="button" class="category-btn" data-category="ai">AI/ML</button>
+                    <button type="button" class="category-btn" data-category="career">커리어</button>
+                    <button type="button" class="category-btn" data-category="review">리뷰</button>
+                    <button type="button" class="category-btn" data-category="free">자유</button>
+                </div>
+                <input type="hidden" id="selectedCategory" name="category" required>
+            </div>
+
+            <!-- 제목 입력 -->
+            <div class="post-item">
+                <h3>📄 게시글 정보</h3>
+                <div class="auth-form">
+                    <div class="form-group">
+                        <label for="postTitle">제목 <span class="required">*</span></label>
+                        <input type="text" id="postTitle" name="title" class="form-control" 
+                               placeholder="게시글 제목을 입력해주세요" maxlength="100" required>
+                        <div class="char-counter" id="titleCounter">0 / 100</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 내용 입력 -->
+            <div class="post-item">
+                <h3>📝 내용 작성</h3>
+                <div class="auth-form">
+                    <div class="form-group">
+                        <div class="toolbar">
+                            <button type="button" class="toolbar-btn" onclick="togglePreview()">
+                                👁️ 미리보기
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="insertText('**', '**')">
+                                <strong>B</strong>
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="insertText('*', '*')">
+                                <em>I</em>
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="insertText('```\n', '\n```')">
+                                &lt;/&gt;
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="insertText('[링크텍스트](', ')')">
+                                🔗
+                            </button>
+                        </div>
+                        <textarea id="postContent" name="content" class="form-control textarea" 
+                                  placeholder="게시글 내용을 작성해주세요..." required></textarea>
+                        <div class="char-counter" id="contentCounter">0자</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 태그 입력 -->
+            <div class="post-item">
+                <h3>🏷️ 태그</h3>
+                <div class="auth-form">
+                    <div class="form-group">
+                        <label for="tagInput">태그 (최대 5개)</label>
+                        <div class="tags-input-container">
+                            <div class="tags-display" onclick="focusTagInput()">
+                                <input type="text" id="tagInput" class="tag-input" 
+                                       placeholder="태그를 입력하고 Enter를 누르세요">
+                            </div>
+                            <div class="tag-suggestions" id="tagSuggestions"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 폼 액션 버튼 -->
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="goBack()">
+                    ❌ 취소
+                </button>
+                <button type="button" class="like-btn" onclick="saveDraft()">
+                    💾 임시저장
+                </button>
+                <button type="submit" class="btn-primary" id="submitBtn">
+                    ✨ 게시글 등록
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 알림 메시지 -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // 전역 변수
+        let selectedCategory = '';
+        let tags = [];
+        let isPreviewMode = false;
+
+        // 태그 추천 목록
+        const tagSuggestions = [
+            'JavaScript', 'React', 'Vue', 'Angular', 'Node.js', 'Python', 'Java', 'Spring',
+            'TypeScript', 'CSS', 'HTML', 'Algorithm', 'Database', 'MySQL', 'MongoDB',
+            'AWS', 'Docker', 'Kubernetes', 'Git', 'Career', 'Interview', 'Study'
+        ];
+
+        // 글 내용 db에 저장
+
+        // 글 제목 db에 저장
+
+        // 작성자
+
+        //
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCategoryButtons();
+            initializeCharCounters();
+            initializeTagInput();
+            checkForDraft();
+        });
+
+        // 카테고리 버튼 초기화
+        function initializeCategoryButtons() {
+            const categoryBtns = document.querySelectorAll('.category-btn');
+            categoryBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    categoryBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedCategory = this.dataset.category;
+                    document.getElementById('selectedCategory').value = selectedCategory;
+                    showNotification(`"${this.textContent}" 카테고리를 선택했습니다.`);
+                });
+            });
+        }
+
+        // 글자수 카운터 초기화
+        function initializeCharCounters() {
+            const titleInput = document.getElementById('postTitle');
+            const titleCounter = document.getElementById('titleCounter');
+            const contentInput = document.getElementById('postContent');
+            const contentCounter = document.getElementById('contentCounter');
+
+            titleInput.addEventListener('input', function() {
+                const length = this.value.length;
+                titleCounter.textContent = `${length} / 100`;
+                titleCounter.className = 'char-counter';
+                if (length > 80) titleCounter.classList.add('warning');
+                if (length > 95) titleCounter.classList.add('danger');
+            });
+
+            contentInput.addEventListener('input', function() {
+                contentCounter.textContent = `${this.value.length}자`;
+            });
+        }
+
+        // 태그 입력 초기화
+        function initializeTagInput() {
+            const tagInput = document.getElementById('tagInput');
+            tagInput.addEventListener('keydown', handleTagInput);
+            tagInput.addEventListener('input', showTagSuggestions);
+            
+            // 태그 영역 외부 클릭 시 suggestions 숨기기
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.tags-input-container')) {
+                    hideTagSuggestions();
+                }
+            });
+        }
+
+        // 태그 입력 처리
+        function handleTagInput(event) {
+            if (event.key === 'Enter' || event.key === ',') {
+                event.preventDefault();
+                addTag(event.target.value.trim());
+                event.target.value = '';
+                hideTagSuggestions();
+            } else if (event.key === 'Backspace' && event.target.value === '' && tags.length > 0) {
+                removeTag(tags.length - 1);
+            }
+        }
+
+        // 태그 추가
+        function addTag(tagText) {
+            if (!tagText || tags.length >= 5 || tags.includes(tagText)) {
+                if (tags.length >= 5) showNotification('태그는 최대 5개까지만 추가할 수 있습니다.', 'error');
+                if (tags.includes(tagText)) showNotification('이미 추가된 태그입니다.', 'error');
+                return;
+            }
+            
+            tags.push(tagText);
+            renderTags();
+            showNotification(`"${tagText}" 태그가 추가되었습니다.`);
+        }
+
+        // 태그 제거
+        function removeTag(index) {
+            const removedTag = tags[index];
+            tags.splice(index, 1);
+            renderTags();
+            showNotification(`"${removedTag}" 태그가 제거되었습니다.`);
+        }
+
+        // 태그 렌더링
+        function renderTags() {
+            const tagsDisplay = document.querySelector('.tags-display');
+            const tagInput = document.getElementById('tagInput');
+            
+            // 기존 태그 아이템들 제거
+            const existingTags = tagsDisplay.querySelectorAll('.tag-item');
+            existingTags.forEach(tag => tag.remove());
+            
+            // 새 태그들 추가
+            tags.forEach((tag, index) => {
+                const tagElement = document.createElement('div');
+                tagElement.className = 'tag-item';
+                tagElement.innerHTML = `
+                    ${tag}
+                    <button type="button" class="tag-remove" onclick="removeTag(${index})">×</button>
+                `;
+                tagsDisplay.insertBefore(tagElement, tagInput);
+            });
+        }
+
+        // 태그 제안 표시
+        function showTagSuggestions(event) {
+            const input = event.target.value.toLowerCase();
+            const suggestions = document.getElementById('tagSuggestions');
+            
+            if (!input) {
+                hideTagSuggestions();
+                return;
+            }
+            
+            const filtered = tagSuggestions.filter(tag => 
+                tag.toLowerCase().includes(input) && !tags.includes(tag)
+            );
+            
+            if (filtered.length > 0) {
+                suggestions.innerHTML = filtered.map(tag => 
+                    `<div class="tag-suggestion" onclick="selectTag('${tag}')">${tag}</div>`
+                ).join('');
+                suggestions.style.display = 'block';
+            } else {
+                hideTagSuggestions();
+            }
+        }
+
+        // 태그 제안 숨기기
+        function hideTagSuggestions() {
+            document.getElementById('tagSuggestions').style.display = 'none';
+        }
+
+        // 태그 선택
+        function selectTag(tag) {
+            addTag(tag);
+            document.getElementById('tagInput').value = '';
+            hideTagSuggestions();
+        }
+
+        // 태그 입력 포커스
+        function focusTagInput() {
+            document.getElementById('tagInput').focus();
+        }
+
+        // 텍스트 삽입 (마크다운 도구)
+        function insertText(before, after) {
+            const textarea = document.getElementById('postContent');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            const newText = before + selectedText + after;
+            
+            textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start + before.length, start + before.length + selectedText.length);
+            
+            // 글자수 카운터 업데이트
+            const event = new Event('input');
+            textarea.dispatchEvent(event);
+        }
+
+        // 미리보기 토글
+        function togglePreview() {
+            const content = document.getElementById('postContent');
+            const toolbar = document.querySelector('.toolbar');
+            const btn = toolbar.querySelector('button');
+            
+            if (!isPreviewMode) {
+                // 미리보기 모드로 전환
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'preview-mode';
+                previewDiv.innerHTML = content.value.replace(/\n/g, '<br>') || '<em>내용을 입력해주세요...</em>';
+                content.style.display = 'none';
+                content.parentNode.insertBefore(previewDiv, content);
+                isPreviewMode = true;
+                btn.textContent = '✏️ 편집';
+            } else {
+                // 편집 모드로 전환
+                const previewDiv = content.parentNode.querySelector('.preview-mode');
+                if (previewDiv) {
+                    previewDiv.remove();
+                }
+                content.style.display = 'block';
+                isPreviewMode = false;
+                btn.textContent = '👁️ 미리보기';
+            }
+        }
+
+        // 임시저장
+        function saveDraft() {
+            const formData = new FormData(document.getElementById('postForm'));
+            const draftData = {
+                type: formData.get('post_type'),
+                category: selectedCategory,
+                title: formData.get('title'),
+                content: formData.get('content'),
+                tags: tags,
+                timestamp: new Date().toISOString()
+            };
+            
+            localStorage.setItem('postDraft', JSON.stringify(draftData));
+            showNotification('임시저장되었습니다!');
+        }
+
+        // 임시저장 불러오기
+        function loadDraft() {
+            const draft = localStorage.getItem('postDraft');
+            if (draft) {
+                const data = JSON.parse(draft);
+                
+                // 게시글 유형 설정
+                if (data.type) {
+                    document.querySelector(`input[value="${data.type}"]`).checked = true;
+                }
+            }
+        }
