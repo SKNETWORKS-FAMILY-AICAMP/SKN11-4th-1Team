@@ -3,9 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>게시글 작성 - 커뮤니티</title>
+    <title>{% block title %}노느 - 교통사고 상담 챗봇{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    
     <style>
-        /* 프로젝트 기존 CSS 변수 및 기본 스타일 */
+    /* 프로젝트 기존 CSS 변수 및 기본 스타일 */
         :root {
             --primary-color: #007bff;
             --secondary-color: #6c757d;
@@ -494,8 +500,75 @@
     </style>
 </head>
 <body>
+    <!-- 네비게이션 바 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'main:index' %}">
+                <i class="bi bi-shield-check"></i> 노느
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'main:index' %}">
+                            <i class="bi bi-chat-dots"></i> 채팅 상담
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'community:list' %}">
+                            <i class="bi bi-people"></i> 커뮤니티
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> {{ user.nickname|default:user.username }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">내 프로필</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">로그아웃</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:login' %}">
+                                <i class="bi bi-box-arrow-in-right"></i> 로그인
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:signup' %}">
+                                <i class="bi bi-person-plus"></i> 회원가입
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
     
-    <div class="auth-container fade-in">
+    <!-- 메시지 알림 -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- 메인 콘텐츠 -->
+    <main>
+         <div class="auth-container fade-in">
         <!-- 페이지 헤더 -->
         <div class="auth-header">
             <h2>✍️ 새 게시글 작성</h2>
@@ -592,7 +665,7 @@
                 <h3>🏷️ 태그</h3>
                 <div class="auth-form">
                     <div class="form-group">
-                        <label for="tagInput">태그 (최대 5개)</label>
+                        <label for="tagInput">태그 (최대 5개)(#으로 구분)</label>
                         <div class="tags-input-container">
                             <div class="tags-display" onclick="focusTagInput()">
                                 <input type="text" id="tagInput" class="tag-input" 
@@ -1058,8 +1131,10 @@
             }
         });
     </script>
-</body>
-<footer class="bg-light py-4 mt-5">
+    </main>
+    
+    <!-- 푸터 -->
+    <footer class="bg-light py-4 mt-5">
         <div class="container text-center">
             <p class="text-muted mb-0">
                 &copy; 2024 노느 - 교통사고 과실비율 상담 챗봇. 
@@ -1067,4 +1142,16 @@
             </p>
         </div>
     </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    {% load static %}
+    <!-- 커스텀 JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
 </html>
