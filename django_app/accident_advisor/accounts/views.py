@@ -15,6 +15,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, LoginForm
+from .forms import ProfileUpdateForm
 from core.models import User
 
 
@@ -89,11 +90,12 @@ def login_view(request):
     return render(request, 'accounts/login.html', context)
 
 
+
 def logout_view(request):
     """
     로그아웃 처리
     
-    📋 팀원 A 할 일:
+    📋 팀원 A 할 일: ✅완료(로그아웃 확인 페이지 추가)✅
     - 특별한 템플릿 필요 없음 (자동 리다이렉트)
     - 필요시 로그아웃 확인 페이지 추가 가능
     """
@@ -102,13 +104,14 @@ def logout_view(request):
         logout(request)
         messages.info(request, f'{username}님, 로그아웃되었습니다.')
     
-    return redirect('main:index')
+    return render(request, 'accounts/logout.html')
+
 
 
 @login_required
 def profile_view(request):
     """
-    프로필 페이지 (선택사항)
+    프로필 페이지✅완료✅
     
     📋 팀원 A 할 일:
     - templates/accounts/profile.html 파일 작성
@@ -124,16 +127,36 @@ def profile_view(request):
     return render(request, 'accounts/profile.html', context)
 
 
+@login_required
+def profile_update_view(request):
+    """프로필 수정 페이지✅완료✅"""
+    user = request.user
+
+    if request.method == 'POST':
+        form = ProfileUpdateForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '프로필이 수정되었습니다.')
+            return redirect('accounts:profile')
+    else:
+        form = ProfileUpdateForm(instance=user)
+
+    return render(request, 'accounts/profile_update.html', {
+        'form': form,
+        'title': '프로필 수정',
+        'user': user,
+    })
+
+
 def password_reset_view(request):
-    """
-    비밀번호 찾기 페이지 (선택사항)
-    
-    📋 팀원 A 할 일:
-    - templates/accounts/password_reset.html 파일 작성
-    - 이메일 입력 폼
-    - 간단한 안내 메시지
-    """
-    context = {
-        'title': '비밀번호 찾기'
-    }
-    return render(request, 'accounts/password_reset.html', context)
+    """비밀번호 찾기 페이지 (선택사항) :✅html만 구현 / 기능 준비중✅  
+     📋 팀원 A 할 일:
+     - templates/accounts/password_reset.html 파일 작성
+     - 이메일 입력 폼
+     - 간단한 안내 메시지"""
+    if request.method == 'POST':
+        messages.info(request, '비밀번호 재설정 기능은 준비 중입니다.')
+        return redirect('accounts:password_reset')
+    return render(request, 'accounts/password_reset.html', {'title': '비밀번호 재설정'})
+
+
