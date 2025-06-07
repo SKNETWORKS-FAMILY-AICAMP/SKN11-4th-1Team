@@ -1,97 +1,88 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ko">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>게시글 상세 - 노느</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/detail.css' %}">
-</head>
 
-<body>
-    <!-- 헤더 -->
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">노느</div>
-            <nav class="nav-menu">
-                <a href="#" class="nav-item">게시 상담</a>
-                <a href="#" class="nav-item">커뮤니티</a>
-            </nav>
-            <div class="user-menu">
-                <a href="#" class="nav-item">로그인</a>
-                <a href="#" class="nav-item">회원가입</a>
+
+{% block title %} 커뮤니티 - {{ post.title }} {% endblock %}
+
+
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/detail.css' %}">
+{% endblock %}
+
+
+
+{% block content %}
+<!-- 메인 컨테이너 -->
+<div class="container">
+    <!-- 게시글 상세 -->
+    <article class="post-detail">
+        <div class="post-header">
+            <h1 class="post-title"> {{ post.title }} </h1>
+            <div class="post-meta">
+                <div class="author">
+                    <div class="author-avatar"> {{ post.author.username|first|upper }} </div>
+                    <span> {{ post.author.username }} </span>
+                </div>
+                <span> {{ post.created_at|date:"Y.m.d H:i" }} </span>
+                <span>조회 {{ post.view_count }} </span>
             </div>
         </div>
-    </header>
 
-    <!-- 메인 컨테이너 -->
-    <div class="container">
-        <!-- 게시글 상세 -->
-        <article class="post-detail">
-            <div class="post-header">
-                <h1 class="post-title"> {{ post.title }} </h1>
-                <div class="post-meta">
-                    <div class="author">
-                        <div class="author-avatar"> {{ post.author.username|first|upper }} </div>
-                        <span> {{ post.author.username }} </span>
-                    </div>
-                    <span> {{ post.created_at|date:"Y.m.d H:i" }} </span>
-                    <span>조회 {{ post.view_count }} </span>
+        <div class="post-content">
+            {{ post.content|linebreaks }}
+        </div>
+
+        <div class="post-actions">
+            <button class="like-btn" id="likeBtn" data-post-id=" post.id ">
+                <span id="likeIcon">🤍</span>
+                <span id="likeCount"> {{ post.like_count }} </span>
+            </button>
+            <button class="share-btn">공유하기</button>
+        </div>
+    </article>
+
+    <!-- 댓글 섹션 -->
+    <section class="comments-section">
+        <div class="comments-header">
+            댓글 <span id="commentCount"> {{ comments.count }} </span>개
+        </div>
+
+        <!-- 댓글 작성 폼 -->
+        <form class="comment-form" id="commentForm">
+            {% csrf_token %}
+            <textarea class="comment-input" name="content" placeholder="댓글을 작성해주세요..." required></textarea>
+            <div class="comment-submit">
+                <button type="submit" class="submit-btn">댓글 작성</button>
+            </div>
+        </form>
+
+        <!-- 댓글 목록 -->
+        <div class="comments-list" id="commentsList">
+            {% for comment in comments %}
+            <div class="comment-item">
+                <div class="comment-author">
+                    <div class="comment-avatar"> {{ comment.author.username|first|upper }} </div>
+                    <span class="comment-name"> {{ comment.author.username }} </span>
+                    <span class="comment-date"> {{ comment.created_at|date:"Y.m.d H:i" }} </span>
+                </div>
+                <div class="comment-text"> {{ comment.content|linebreaks }} </div>
+            </div>
+            {% empty %}
+            <div class="comment-item">
+                <div class="comment-text" style="text-align: center; color: #999; margin-left: 0;">
+                    아직 댓글이 없습니다. 첫 번째 댓글을 작성해보세요!
                 </div>
             </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}
 
-            <div class="post-content">
-                {{ post.content|linebreaks }}
-            </div>
 
-            <div class="post-actions">
-                <button class="like-btn" id="likeBtn" data-post-id=" post.id ">
-                    <span id="likeIcon">🤍</span>
-                    <span id="likeCount"> {{ post.like_count }} </span>
-                </button>
-                <button class="share-btn">공유하기</button>
-            </div>
-        </article>
 
-        <!-- 댓글 섹션 -->
-        <section class="comments-section">
-            <div class="comments-header">
-                댓글 <span id="commentCount"> {{ comments.count }} </span>개
-            </div>
-
-            <!-- 댓글 작성 폼 -->
-            <form class="comment-form" id="commentForm">
-                {% csrf_token %}
-                <textarea class="comment-input" name="content" placeholder="댓글을 작성해주세요..." required></textarea>
-                <div class="comment-submit">
-                    <button type="submit" class="submit-btn">댓글 작성</button>
-                </div>
-            </form>
-
-            <!-- 댓글 목록 -->
-            <div class="comments-list" id="commentsList">
-                {% for comment in comments %}
-                <div class="comment-item">
-                    <div class="comment-author">
-                        <div class="comment-avatar"> {{ comment.author.username|first|upper }} </div>
-                        <span class="comment-name"> {{ comment.author.username }} </span>
-                        <span class="comment-date"> {{ comment.created_at|date:"Y.m.d H:i" }} </span>
-                    </div>
-                    <div class="comment-text"> {{ comment.content|linebreaks }} </div>
-                </div>
-                {% empty %}
-                <div class="comment-item">
-                    <div class="comment-text" style="text-align: center; color: #999; margin-left: 0;">
-                        아직 댓글이 없습니다. 첫 번째 댓글을 작성해보세요!
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </section>
-    </div>
-
-    <script src="{% static 'js/detail.js' %}"></script>
-</body>
-
-</html>
+{% block extra_js %}
+<script src="{% static 'js/detail.js' %}"></script>
+{% endblock %}
