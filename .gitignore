@@ -9,6 +9,7 @@ data/*/split/
 chroma_db/
 vector_db/
 **/migrations/
+.DS_Store
 ##########
 
 
