@@ -1,56 +1,58 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-  <div class="container">
-    <h2>{{ title }}</h2>
+
+  <link rel="stylesheet" href="{% static 'css/profile_update.css' %}">
+
+  <div class="profile-update-container">
+    <h2 class="profile-title">{{ title }}</h2>
 
     {% if messages %}
       <ul class="messages">
         {% for message in messages %}
-          <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>
-            {{ message }}
-          </li>
+          <li {% if message.tags %} class="alert {{ message.tags }}" {% endif %}>{{ message }}</li>
         {% endfor %}
       </ul>
     {% endif %}
 
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" class="profile-form">
       {% csrf_token %}
 
-      {# 닉네임 #}
       <div class="form-group">
         <label for="{{ form.nickname.id_for_label }}">닉네임</label>
         {{ form.nickname }}
         {% if form.nickname.errors %}
-          <div class="field-error">{{ form.nickname.errors|striptags }}</div>
+          <div class="form-error">{{ form.nickname.errors|striptags }}</div>
         {% endif %}
       </div>
 
-      {# 이메일 #}
       <div class="form-group">
         <label for="{{ form.email.id_for_label }}">이메일</label>
         {{ form.email }}
         {% if form.email.errors %}
-          <div class="field-error">{{ form.email.errors|striptags }}</div>
+          <div class="form-error">{{ form.email.errors|striptags }}</div>
         {% endif %}
       </div>
 
-      {# 프로필 이미지 #}
       <div class="form-group">
         <label for="{{ form.profile_image.id_for_label }}">프로필 이미지</label><br>
         {% if user.profile_image %}
-          <img src="{{ user.profile_image.url }}" alt="현재 이미지" width="120"><br>
+          <img src="{{ user.profile_image.url }}" alt="현재 이미지" class="profile-image-preview"><br>
         {% endif %}
         {{ form.profile_image }}
         {% if form.profile_image.errors %}
-          <div class="field-error">{{ form.profile_image.errors|striptags }}</div>
+          <div class="form-error">{{ form.profile_image.errors|striptags }}</div>
         {% endif %}
       </div>
 
-      <button type="submit" class="btn btn-primary">저장</button>
-      <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">취소</a>
-    <a href="{% url 'accounts:password_reset' %}" class="btn btn-warning">비밀번호 재설정</a>
+  <div class="form-actions">
+    <button type="submit" class="btn-profile-save">저장</button>
+    <a href="{% url 'accounts:profile' %}" class="btn-profile-cancel">취소</a>
+    <a href="{% url 'accounts:password_reset' %}" class="btn-profile-reset">비밀번호 재설정</a>
+  </div>
+
+
     </form>
   </div>
-  
 {% endblock %}

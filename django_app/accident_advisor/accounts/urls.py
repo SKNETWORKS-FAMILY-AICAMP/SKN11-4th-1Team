@@ -21,7 +21,7 @@ urlpatterns = [
     # 프로필 수정 (선택사항)
     path('profile/update/', views.profile_update_view, name='profile_update'),
     
-    # 비밀번호 찾기 (선택사항)
+    # 비밀번호 변경 (선택사항)
     path('password-reset/', views.password_reset_view, name='password_reset'),
     
 ]

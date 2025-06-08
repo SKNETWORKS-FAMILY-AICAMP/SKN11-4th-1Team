@@ -11,11 +11,12 @@
 """
 
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm, LoginForm
-from .forms import ProfileUpdateForm
+from django.contrib.auth.forms import PasswordChangeForm
+
+from .forms import CustomUserCreationForm, LoginForm, ProfileUpdateForm
 from core.models import User
 
 
@@ -147,16 +148,24 @@ def profile_update_view(request):
         'user': user,
     })
 
-
+@login_required
 def password_reset_view(request):
-    """비밀번호 찾기 페이지 (선택사항) :✅html만 구현 / 기능 준비중✅  
-     📋 팀원 A 할 일:
-     - templates/accounts/password_reset.html 파일 작성
-     - 이메일 입력 폼
-     - 간단한 안내 메시지"""
+    """내 정보 > 비밀번호 재설정 (현재 비밀번호 → 새 비밀번호로 변경)"""
     if request.method == 'POST':
-        messages.info(request, '비밀번호 재설정 기능은 준비 중입니다.')
-        return redirect('accounts:password_reset')
-    return render(request, 'accounts/password_reset.html', {'title': '비밀번호 재설정'})
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # 비밀번호 바꿔도 로그인 유지
+            messages.success(request, '비밀번호가 성공적으로 변경되었습니다.')
+            return redirect('accounts:profile')
+        else:
+            messages.error(request, '입력한 정보를 다시 확인해주세요.')
+    else:
+        form = PasswordChangeForm(user=request.user)
+
+    return render(request, 'accounts/password_reset.html', {
+        'form': form,
+        'title': '비밀번호 재설정',
+    })
 
 
