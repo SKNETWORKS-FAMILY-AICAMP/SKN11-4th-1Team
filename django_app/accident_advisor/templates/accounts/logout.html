@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <link rel="stylesheet" href="{% static 'css/logout.css' %}">
+  <script src="{% static 'js/logout.js' %}"></script>
+
+  <div class="logout-container">
+    <h2 class="logout-title">로그아웃 되었습니다. </h2>
+
+    <div class="logout-buttons">
+      <a href="{% url 'accounts:login' %}" class="btn-logout-login">로그인</a>
+      <a href="{% url 'main:index' %}" class="btn-logout-home">메인으로 돌아가기</a>
+    </div>
+  </div>
+{% endblock %}
