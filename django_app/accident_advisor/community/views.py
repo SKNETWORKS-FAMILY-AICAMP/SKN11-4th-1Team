@@ -22,53 +22,65 @@ from .forms import PostForm, CommentForm
 
 
 def post_list(request):
-    """
-    게시글 목록 페이지 (팀원 B 담당)
-    
-    📋 팀원 B 할 일:
-    - templates/community/list.html 파일 작성
-    - 게시글 목록 표시
-    - 카테고리별 필터링
-    - 검색 기능
-    - 페이지네이션
-    """
-    # 모든 카테고리 가져오기
-    categories = Category.objects.all()
-    
-    # 기본 게시글 목록
+    # 기본 쿼리셋
     posts = Post.objects.filter(is_active=True).select_related('author', 'category')
-    
-    # 카테고리 필터링
-    category_id = request.GET.get('category')
-    if category_id:
-        posts = posts.filter(category_id=category_id)
-    
-    # 검색 기능
+
+    # 필터 조건들 저장
+    filters = Q()
+
+    # post_type 필터
+    post_type = request.GET.get('type')
+    if post_type:
+        filters &= Q(post_type=post_type)
+
+    # 검색 필터
     search_query = request.GET.get('search', '').strip()
     if search_query:
-        posts = posts.filter(
-            Q(title__icontains=search_query) | 
+        filters &= (
+            Q(title__icontains=search_query) |
             Q(content__icontains=search_query) |
             Q(tags__icontains=search_query)
         )
-    
-    # 정렬 (최신순)
-    posts = posts.order_by('-created_at')
-    
-    # 페이지네이션 (한 페이지에 10개)
+
+    # 태그 필터
+    tag_query = request.GET.get('tag')
+    if tag_query:
+        filters &= Q(tags__icontains=tag_query)
+
+    # 최종 필터링 적용
+    posts = posts.filter(filters).order_by('-created_at')
+
+    # 페이지네이션
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
+    # post_type 라벨 정의
+    POST_TYPE_LABELS = {
+        'pedestrian': '차 vs 보행자',
+        'car': '차 vs 차',
+        'bike': '차 vs 자전거(농기구)',
+        'legal': '법률상담',
+        'free': '자유',
+    }
+
+    # ✅ 각 post에 tag_list 및 post_type_label 속성 추가
+    for post in page_obj:
+        post.tag_list = [tag.strip() for tag in post.tags.split(',') if tag.strip()]
+        post.post_type_label = POST_TYPE_LABELS.get(post.post_type, '기타')
+
     context = {
-        'categories': categories,
         'posts': page_obj,
         'search_query': search_query,
-        'selected_category': int(category_id) if category_id else None,
+        'selected_type': post_type,
+        'selected_tag': tag_query,
+        'post_type_labels': POST_TYPE_LABELS,
         'title': '커뮤니티'
     }
-    
+
     return render(request, 'community/list.html', context)
+
+
 
 
 def post_detail(request, post_id):
