@@ -11,19 +11,24 @@ https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# .env 파일 로드
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure--lco9l6n+^z1urxvv(j)t37nd1e-wt6-l*k2%xd^^ze5uy2b*j"
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure--lco9l6n+^z1urxvv(j)t37nd1e-wt6-l*k2%xd^^ze5uy2b*j')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -137,3 +142,81 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # 로그인/로그아웃 후 리다이렉트 URL
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# =============================================================================
+# AI 및 분류 시스템 설정
+# =============================================================================
+
+# OpenAI API 설정
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+FINETUNED_MODEL_ID = os.getenv('FINETUNED_MODEL_ID')
+
+# 분류 시스템 설정
+CLASSIFICATION_TIMEOUT = int(os.getenv('CLASSIFICATION_TIMEOUT', '10'))
+CLASSIFICATION_MAX_RETRIES = int(os.getenv('CLASSIFICATION_MAX_RETRIES', '3'))
+ENABLE_FALLBACK = os.getenv('ENABLE_FALLBACK', 'True').lower() == 'true'
+
+# 지원되는 분류 카테고리
+SUPPORTED_CATEGORIES = [
+    'accident',    # 교통사고 상황
+    'precedent',   # 판례 검색
+    'law',         # 도로교통법
+    'term',        # 용어 설명
+    'general'      # 일반 질문
+]
+
+# 분류 시스템 기본 설정
+CLASSIFICATION_SYSTEM_PROMPT = "분류: accident|precedent|law|term|general"
+
+# AI 로깅 설정
+AI_LOGGING_ENABLED = DEBUG
+AI_LOG_REQUESTS = DEBUG
+AI_LOG_RESPONSES = DEBUG
+
+# =============================================================================
+# Vector DB 및 메타데이터 경로 설정
+# =============================================================================
+
+# 메타데이터 폴더 경로 (JSON 파일들이 있는 폴더)
+METADATA_PATH = BASE_DIR.parent.parent / 'metadata'
+
+# Vector DB 저장 경로
+VECTOR_DB_PATH = BASE_DIR.parent.parent / 'vector_db'
+
+# =============================================================================
+# Django 로깅 설정
+# =============================================================================
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'main.services.ai_classifier': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'main.views': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

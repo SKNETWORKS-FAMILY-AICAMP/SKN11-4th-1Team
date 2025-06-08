@@ -1,33 +1,40 @@
-# Django 프로젝트 필수 패키지
-
-# Django 프레임워크
+# Django 웹 프레임워크
 Django==5.2.1
+djangorestframework==3.14.0
 
-# 데이터베이스 (개발용 SQLite, 추후 PostgreSQL 등으로 변경 가능)
-# psycopg2-binary==2.9.7  # PostgreSQL 사용시 주석 해제
+# 환경변수 관리
+python-decouple==3.8
+python-dotenv==1.0.0
 
 # 이미지 처리 (프로필 이미지 등)
 Pillow==10.0.0
 
-# API 개발 (추후 필요시)
-# djangorestframework==3.14.0
+# AI 및 LangChain (리더 작업용)
+langchain==0.3.7
+langchain-openai==0.2.8
+langchain-chroma==0.1.4
+langchain-community==0.3.7
 
-# 환경변수 관리
-python-decouple==3.8
+# OpenAI
+openai==1.51.2
 
-# 한국어 지원
-# django-extensions==3.2.3
+# 벡터 DB
+chromadb==0.5.20
 
-# 개발 도구 (개발 환경에서만 사용)
-# django-debug-toolbar==4.2.0
-
-# AI/ML 관련 (리더가 추후 추가할 패키지들)
-# openai
-# langchain
-# chromadb
-# sentence-transformers
-# torch
-# transformers
+# 임베딩 및 NLP
+sentence-transformers==3.3.1
+numpy==1.26.4
 
 # 기타 유틸리티
 requests==2.31.0
+pathlib2==2.3.7
+
+# 개발 도구 (선택사항)
+jupyter==1.0.0
+ipython==8.18.1
+
+# 한국어 지원
+django-extensions==3.2.3
+
+# 개발 도구 (개발 환경에서만 사용)
+django-debug-toolbar==4.2.0

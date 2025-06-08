@@ -10,8 +10,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from core.models import User, ChatSession, ChatMessage, AccidentCase
+from .services.ai_classifier import process_user_query
 import json
 import uuid
+import logging
+
+# 로거 설정
+logger = logging.getLogger(__name__)
 
 
 def index(request):
@@ -42,7 +47,7 @@ def send_message(request):
     """
     메시지 전송 API
     - 사용자 메시지 저장
-    - AI 응답 생성 (나중에 구현)
+    - AI 응답 생성 (파인튜닝된 분류기 사용)
     - 응답 반환
     """
     try:
@@ -114,11 +119,25 @@ def create_new_session(user, first_message):
 
 def generate_bot_response(user_message):
     """
-    AI 봇 응답 생성 (현재는 임시 구현)
+    AI 봇 응답 생성 (RAG 시스템 사용)
     
-    TODO: 나중에 리더가 RAG + 파인튜닝 모델과 연동
+    1. 파인튜닝된 GPT-3.5-turbo로 질문 분류
+    2. 카테고리별 RAG 처리 (판례 검색 구현 완료)
     """
-    # 키워드 기반 간단한 응답 (임시)
+    try:
+        # 통합 처리 함수 사용 (분류 + RAG 처리)
+        category, response = process_user_query(user_message)
+        logger.info(f"질문 처리 완료: '{user_message[:50]}...' → {category}")
+        
+        return response
+            
+    except Exception as e:
+        logger.error(f"응답 생성 중 오류: {str(e)}")
+        return generate_fallback_response(user_message)
+
+
+def generate_accident_response(user_message):
+    """사고 분석 응답 생성 (임시)"""
     user_message_lower = user_message.lower()
     
     if any(word in user_message_lower for word in ['교차로', '좌회전', '직진']):
@@ -166,8 +185,75 @@ def generate_bot_response(user_message):
 - "신호위반 차량과 사고가 났어요"
 
 어떤 상황인지 자세히 설명해주세요!"""
+
+
+def generate_precedent_response(user_message):
+    """판례 검색 응답 생성 (임시)"""
+    return """⚖️ **판례 검색 결과**
+
+**분류**: 판례 검색 (파인튜닝 모델 분류 ✅)
+
+현재 판례 검색 기능을 준비 중입니다. 
+구체적인 사건번호나 판례 내용을 알려주시면 관련 정보를 찾아드리겠습니다.
+
+**예시 질문**:
+- "대법원 2019다12345 판례 내용은?"
+- "교차로 사고 관련 판례를 알려주세요"""
+
+def generate_law_response(user_message):
+    """법률 조회 응답 생성 (임시)"""
+    return """📚 **도로교통법 조회 결과**
+
+**분류**: 법률 조회 (파인튜닝 모델 분류 ✅)
+
+현재 도로교통법 조회 기능을 준비 중입니다.
+구체적인 조문 번호나 법률 내용을 알려주시면 관련 정보를 찾아드리겠습니다.
+
+**예시 질문**:
+- "도로교통법 제25조 내용은?"
+- "신호위반 관련 법률을 알려주세요"""
+
+def generate_term_response(user_message):
+    """용어 설명 응답 생성 (임시)"""
+    return """📖 **용어 설명 결과**
+
+**분류**: 용어 설명 (파인튜닝 모델 분류 ✅)
+
+현재 용어 설명 기능을 준비 중입니다.
+구체적인 용어를 알려주시면 정확한 정의를 설명해드리겠습니다.
+
+**예시 질문**:
+- "과실비율이 무엇인가요?"
+- "차로변경의 정의는?"""
+
+def generate_general_response(user_message):
+    """일반 질문 응답 생성 (임시)"""
+    return """👋 **일반 상담**
+
+**분류**: 일반 질문 (파인튜닝 모델 분류 ✅)
+
+안녕하세요! 교통사고 과실비율 상담 챗봇 '노느'입니다.
+
+다음과 같은 도움을 드릴 수 있습니다:
+- 🚗 교통사고 과실비율 분석
+- ⚖️ 관련 판례 검색
+- 📚 도로교통법 조회
+- 📖 교통 용어 설명
+
+어떤 도움이 필요하신지 알려주세요!"""
+
+def generate_fallback_response(user_message):
+    """폴백 응답 (오류 시)"""
+    return """❌ **일시적 오류 발생**
+
+죄송합니다. 일시적으로 AI 분류 시스템에 문제가 발생했습니다.
+잠시 후 다시 시도해주시거나, 구체적인 교통사고 상황을 자세히 설명해주시면 도움을 드리겠습니다.
+
+**문의 예시**:
+- "교차로에서 좌회전 중 사고가 났어요"
+- "주차장에서 접촉사고가 발생했어요"""
     
-    return response
+
 
 
 @require_http_methods(["GET"])

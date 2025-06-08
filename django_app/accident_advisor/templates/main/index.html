@@ -54,6 +54,52 @@
         padding: 12px 16px;
         border-radius: 18px;
         word-wrap: break-word;
+        white-space: pre-wrap;
+        line-height: 1.5;
+    }
+    
+    /* 판례 검색 결과 스타일링 */
+    .message.bot .message-bubble {
+        background-color: #f8f9fa;
+        color: #333;
+        margin-right: auto;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* 마크다운 스타일 지원 */
+    .message-bubble h3,
+    .message-bubble h4 {
+        margin: 8px 0;
+        color: #333;
+    }
+    
+    .message-bubble h3 {
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+    
+    .message-bubble h4 {
+        font-size: 1em;
+        font-weight: 500;
+    }
+    
+    .message-bubble strong {
+        font-weight: 600;
+    }
+    
+    .message-bubble ul {
+        margin: 8px 0;
+        padding-left: 20px;
+    }
+    
+    .message-bubble li {
+        margin: 4px 0;
+    }
+    
+    /* 이모지 크기 조정 */
+    .message-bubble .emoji {
+        font-size: 1.1em;
     }
     
     .message.user .message-bubble {
@@ -63,9 +109,11 @@
     }
     
     .message.bot .message-bubble {
-        background-color: #e9ecef;
+        background-color: #f8f9fa;
         color: #333;
         margin-right: auto;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     .session-item {
@@ -267,6 +315,11 @@ function addMessage(content, sender, isLoading = false) {
     const messageClass = sender === 'user' ? 'user' : 'bot';
     const loadingClass = isLoading ? 'loading' : '';
     
+    // 봇 메시지의 경우 마크다운 스타일 변환
+    if (sender === 'bot' && !isLoading) {
+        content = formatBotMessage(content);
+    }
+    
     const messageHtml = `
         <div class="message ${messageClass} ${loadingClass}">
             <div class="message-bubble">
@@ -277,6 +330,26 @@ function addMessage(content, sender, isLoading = false) {
     
     $('#chatMessages').append(messageHtml);
     $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+}
+
+// 봇 메시지 포맷팅 함수
+function formatBotMessage(content) {
+    // 기본 마크다운 스타일 변환
+    content = content
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // **굵은글씨**
+        .replace(/\*(.*?)\*/g, '<em>$1</em>') // *기울임*
+        .replace(/^### (.*$)/gim, '<h4>$1</h4>') // ### 제목
+        .replace(/^## (.*$)/gim, '<h3>$1</h3>') // ## 제목
+        .replace(/^# (.*$)/gim, '<h2>$1</h2>') // # 제목
+        .replace(/^• (.*$)/gim, '<li>$1</li>') // • 불릿
+        .replace(/^- (.*$)/gim, '<li>$1</li>'); // - 불릿
+    
+    // 리스트 태그로 감싸기
+    if (content.includes('<li>')) {
+        content = content.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+    }
+    
+    return content;
 }
 
 // 사이드바 업데이트
