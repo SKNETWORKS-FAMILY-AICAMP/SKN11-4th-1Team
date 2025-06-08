@@ -17,12 +17,12 @@
         <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
     </form>
 
-    <!-- post_type 필터 -->
+    <!-- 카테고리 필터 -->
     <div class="mb-4">
-        <a href="{% url 'community:list' %}" class="btn btn-sm {% if not selected_type %}btn-primary{% else %}btn-outline-primary{% endif %}">전체</a>
-        {% for type_key, type_label in post_type_labels.items %}
-            <a href="?type={{ type_key }}" class="btn btn-sm {% if selected_type == type_key %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                {{ type_label }}
+        <a href="{% url 'community:list' %}" class="btn btn-sm {% if not selected_category %}btn-primary{% else %}btn-outline-primary{% endif %}">전체</a>
+        {% for cat in categories %}
+            <a href="?category={{ cat.id }}" class="btn btn-sm {% if selected_category == cat.id %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                {{ cat.name }}
             </a>
         {% endfor %}
     </div>
