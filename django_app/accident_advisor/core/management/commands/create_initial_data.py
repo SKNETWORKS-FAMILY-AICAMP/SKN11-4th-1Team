@@ -248,42 +248,27 @@ class Command(BaseCommand):
         """커뮤니티 카테고리 생성"""
         categories_data = [
             {
-                'name': '교차로 사고',
-                'icon': '🚗',
-                'description': '교차로에서 발생한 교통사고 관련 질문과 경험담'
+                'name': '차vs보행자',
+                'icon': '🚶‍♂️‍➡️💥🚗',
+                'description': '차vs보행자 교통사고 관련 질문과 경험담'
             },
             {
-                'name': '주차장 사고',
-                'icon': '🅿️',
-                'description': '주차장 내에서 발생한 접촉사고 관련 내용'
+                'name': '차vs차',
+                'icon': '🚗💥🚜',
+                'description': '차vs차 교통사고 관련 질문과 경험담'
             },
             {
-                'name': '차로변경 사고',
-                'icon': '🛣️',
-                'description': '차로변경 중 발생한 사고 관련 상담'
+                'name': '차vs자전거(농기구)',
+                'icon': '🚴‍♂️💥🚗',
+                'description': '차vs자전거(농기구) 교통사고 관련 질문과 경험담'
             },
             {
-                'name': '후진 사고',
-                'icon': '⬅️',
-                'description': '후진 중 발생한 사고 관련 질문'
-            },
-            {
-                'name': '보험 처리',
+                'name': '법률상담',
                 'icon': '📋',
-                'description': '보험 처리 과정 및 절차 관련 정보'
+                'description': '법률상담 과정 및 절차 관련 정보'
             },
             {
-                'name': '법률 상담',
-                'icon': '⚖️',
-                'description': '교통사고 관련 법률 해석 및 상담'
-            },
-            {
-                'name': '과실비율',
-                'icon': '📊',
-                'description': '과실비율 산정 및 이의제기 관련'
-            },
-            {
-                'name': '기타',
+                'name': '자유',
                 'icon': '💬',
                 'description': '기타 교통사고 관련 질문 및 토론'
             }
@@ -390,7 +375,7 @@ class Command(BaseCommand):
 비슷한 경험 있으신 분들의 조언 부탁드립니다.''',
                 'post_type': 'question',
                 'tags': '교차로,좌회전,신호위반,과실비율',
-                'category_name': '교차로 사고'
+                'category_name': '차vs보행자'
             },
             {
                 'title': '주차장 접촉사고 경험담 - 보험처리 과정 공유',
@@ -408,7 +393,7 @@ class Command(BaseCommand):
 주차장 사고는 생각보다 복잡하더라구요. 특히 CCTV가 없는 곳에서는 더욱 조심해야 할 것 같습니다.''',
                 'post_type': 'experience',
                 'tags': '주차장,접촉사고,후진,보험처리',
-                'category_name': '주차장 사고'
+                'category_name': '차vs차'
             },
             {
                 'title': '차로변경 시 안전거리 확보하는 팁',
@@ -433,7 +418,7 @@ class Command(BaseCommand):
 특히 고속도로에서는 더욱 주의해야 합니다!''',
                 'post_type': 'tip',
                 'tags': '차로변경,안전거리,사각지대,예방',
-                'category_name': '차로변경 사고'
+                'category_name': '차vs자전거(농기구)'
             },
             {
                 'title': '보험회사에서 과실비율 80:20 제시, 이의제기 가능한가요?',
@@ -450,7 +435,7 @@ class Command(BaseCommand):
 블랙박스 영상을 보면 명백히 상대방 잘못인 것 같은데... 어떻게 해야 할지 모르겠습니다.''',
                 'post_type': 'question',
                 'tags': '과실비율,이의제기,블랙박스,보험회사',
-                'category_name': '과실비율'
+                'category_name': '법률상담'
             },
             {
                 'title': '교통사고 발생 시 현장에서 해야 할 일들 (체크리스트)',
@@ -481,7 +466,7 @@ class Command(BaseCommand):
 초보운전자분들께 도움이 되었으면 좋겠어요!''',
                 'post_type': 'tip',
                 'tags': '교통사고,현장대응,초보운전자,매뉴얼',
-                'category_name': '기타'
+                'category_name': '자유'
             }
         ]
 
@@ -492,35 +477,35 @@ class Command(BaseCommand):
                 'content': '고속도로에서 앞차가 급정거해서 추돌사고가 났습니다. 과실비율이 어떻게 될까요?',
                 'post_type': 'question',
                 'tags': '고속도로,추돌,급정거',
-                'category_name': '기타'
+                'category_name': '자유'
             },
             {
                 'title': '무보험 차량과 사고 났을 때 대처법',
                 'content': '상대방이 보험에 가입하지 않은 차량이었습니다. 이런 경우 어떻게 처리해야 하나요?',
                 'post_type': 'question',
                 'tags': '무보험,대처법',
-                'category_name': '보험 처리'
+                'category_name': '법률상담'
             },
             {
                 'title': '렌터카 사고 처리 경험담',
                 'content': '렌터카로 여행 중 사고가 났던 경험을 공유합니다. 일반 차량과는 처리 과정이 조금 달랐어요.',
                 'post_type': 'experience',
                 'tags': '렌터카,여행',
-                'category_name': '보험 처리'
+                'category_name': '법률상담'
             },
             {
                 'title': '음주운전 차량과의 사고 처리 과정',
                 'content': '상대방이 음주운전이었던 경우의 처리 과정을 공유합니다.',
                 'post_type': 'experience',
                 'tags': '음주운전,처리과정',
-                'category_name': '법률 상담'
+                'category_name': '법률상담'
             },
             {
                 'title': '후진 중 보행자와 접촉사고, 과실비율은?',
                 'content': '주차장에서 후진 중 보행자와 접촉사고가 났습니다. 과실비율이 궁금해요.',
                 'post_type': 'question',
                 'tags': '후진,보행자,주차장',
-                'category_name': '후진 사고'
+                'category_name': '차vs보행자'
             }
         ]
 
