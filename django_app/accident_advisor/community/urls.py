@@ -13,10 +13,10 @@ urlpatterns = [
     
     # 게시글 상세 (팀원 C)
     path('<int:post_id>/', views.post_detail, name='detail'),
-    
     # 게시글 작성 (팀원 D)
     path('write/', views.post_create, name='create'),
-    
+    path('post/create/', views.post_create, name='post_create'),    
+
     # 좋아요 기능 (팀원 C가 AJAX로 사용)
     path('<int:post_id>/like/', views.toggle_like, name='toggle_like'),
     
