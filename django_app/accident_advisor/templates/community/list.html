@@ -17,12 +17,12 @@
         <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
     </form>
 
-    <!-- 카테고리 필터 -->
+    <!-- post_type 필터 -->
     <div class="mb-4">
-        <a href="{% url 'community:list' %}" class="btn btn-sm {% if not selected_category %}btn-primary{% else %}btn-outline-primary{% endif %}">전체</a>
-        {% for cat in categories %}
-            <a href="?category={{ cat.id }}" class="btn btn-sm {% if selected_category == cat.id %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                {{ cat.name }}
+        <a href="{% url 'community:list' %}" class="btn btn-sm {% if not selected_type %}btn-primary{% else %}btn-outline-primary{% endif %}">전체</a>
+        {% for type_key, type_label in post_type_labels.items %}
+            <a href="?type={{ type_key }}" class="btn btn-sm {% if selected_type == type_key %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                {{ type_label }}
             </a>
         {% endfor %}
     </div>
@@ -31,18 +31,31 @@
     {% if posts %}
         <div class="list-group shadow-sm">
             {% for post in posts %}
-                <a href="{% url 'community:detail' post.id %}" class="list-group-item list-group-item-action">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="badge bg-primary">{{ post.category.name }}</span>
-                            <strong class="ms-2">{{ post.title }}</strong>
+                <div class="list-group-item">
+                    <a href="{% url 'community:detail' post.id %}" class="text-decoration-none text-dark">
+                        <!-- 제목 + 날짜 -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>[{{ post.post_type_label }}] {{ post.title }}</strong>
+                            <small class="text-muted">{{ post.created_at|date:"Y-m-d H:i" }}</small>
                         </div>
-                        <small class="text-muted">{{ post.created_at|date:"Y-m-d H:i" }}</small>
-                    </div>
-                    <div class="mt-1 small text-muted">
-                        {{ post.author.nickname|default:post.author.username }} · 조회 {{ post.view_count }} · 💬 {{ post.comment_count }} · ❤️ {{ post.like_count }}
-                    </div>
-                </a>
+
+                        <!-- 태그 -->
+                        {% if post.tag_list %}
+                            <div class="mt-2 d-flex flex-wrap gap-2">
+                                {% for tag in post.tag_list %}
+                                    <a href="?tag={{ tag|urlencode }}" class="badge rounded-pill bg-light text-primary border border-primary text-decoration-none">
+                                        #{{ tag }}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- 메타 정보 -->
+                        <div class="mt-2 small text-muted">
+                            {{ post.author.nickname|default:post.author.username }} · 조회 {{ post.view_count }} · 💬 {{ post.comment_count }} · ❤️ {{ post.like_count }}
+                        </div>
+                    </a>
+                </div>
             {% endfor %}
         </div>
     {% else %}
@@ -57,13 +70,21 @@
         <ul class="pagination justify-content-center">
             {% if posts.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ posts.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">이전</a>
+                    <a class="page-link"
+                       href="?page={{ posts.previous_page_number }}
+                       {% if selected_type %}&type={{ selected_type }}{% endif %}
+                       {% if search_query %}&search={{ search_query }}{% endif %}
+                       {% if selected_tag %}&tag={{ selected_tag }}{% endif %}">이전</a>
                 </li>
             {% endif %}
             <li class="page-item active"><span class="page-link">{{ posts.number }}</span></li>
             {% if posts.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ posts.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">다음</a>
+                    <a class="page-link"
+                       href="?page={{ posts.next_page_number }}
+                       {% if selected_type %}&type={{ selected_type }}{% endif %}
+                       {% if search_query %}&search={{ search_query }}{% endif %}
+                       {% if selected_tag %}&tag={{ selected_tag }}{% endif %}">다음</a>
                 </li>
             {% endif %}
         </ul>
