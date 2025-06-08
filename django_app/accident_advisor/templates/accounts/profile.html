@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+
+  <div class="profile-container">
+    <h2 class="profile-title">{{ title }}</h2>
+
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li {% if message.tags %} class="alert {{ message.tags }}" {% endif %}>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <div class="profile-info">
+      <p><strong>닉네임:</strong> {{ user.nickname }}</p>
+      <p><strong>이메일:</strong> {{ user.email }}</p>
+      <p><strong>총 채팅 수:</strong> {{ user.total_chats }}</p>
+      <p><strong>총 게시글 수:</strong> {{ user.total_posts }}</p>
+
+      {% if user.profile_image %}
+        <div class="profile-image-wrapper">
+          <img src="{{ user.profile_image.url }}" alt="프로필 이미지" class="profile-image">
+        </div>
+      {% else %}
+        <p class="text-muted">프로필 이미지 없음</p>
+      {% endif %}
+    </div>
+
+    <div class="profile-actions">
+      <a href="{% url 'accounts:profile_update' %}" class="btn-profile-edit">프로필 수정</a>
+      <a href="{% url 'accounts:logout' %}" class="btn-profile-logout">로그아웃</a>
+    </div>
+  </div>
+{% endblock %}

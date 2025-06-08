@@ -178,13 +178,26 @@ class Category(BaseModel):
         verbose_name='게시글 수'
     )
     
+    # 누락된 필드들 추가
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='활성 상태',
+        help_text='체크 해제 시 카테고리가 비활성화됩니다'
+    )
+    order = models.PositiveIntegerField(
+        default=0,
+        verbose_name='정렬 순서',
+        help_text='숫자가 작을수록 먼저 표시됩니다'
+    )
+    
     def __str__(self):
         return f"{self.icon} {self.name}"
     
     class Meta:
         verbose_name = '카테고리'
         verbose_name_plural = '카테고리들'
-        ordering = ['name']
+        ordering = ['order', 'name']  # order 필드로 먼저 정렬, 그 다음 이름순
+
 
 
 class Post(BaseModel):
@@ -239,6 +252,22 @@ class Post(BaseModel):
     
     def __str__(self):
         return f"[{self.category.name}] {self.title}"
+    
+    def get_tags_list(self):
+        """태그를 리스트로 반환"""
+        if self.tags:
+            return [tag.strip() for tag in self.tags.split(',') if tag.strip()]
+        return []
+    
+    def set_tags_from_list(self, tag_list):
+        """리스트에서 태그 문자열로 설정"""
+        self.tags = ','.join(tag_list) if tag_list else ''
+    
+    def get_status_display(self):
+        """게시글 상태 표시"""
+        if self.post_type == 'question':
+            return '해결됨' if self.is_resolved else '미해결'
+        return '활성' if self.is_active else '비활성'
     
     class Meta:
         verbose_name = '게시글'

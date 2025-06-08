@@ -1,0 +1,85 @@
+.profile-container {
+    max-width: 600px;
+    margin: 80px auto;
+    padding: 30px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.profile-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+
+.profile-info p {
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+.profile-image-wrapper {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.profile-image {
+    width: 150px;
+    border-radius: 12px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+}
+
+.profile-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+.btn-profile-edit {
+    background-color: #4285f4;
+    color: white;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background 0.3s;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-profile-edit:hover {
+    background-color: #1976d2;
+}
+
+.btn-profile-logout {
+    background-color: white;
+    color: #666;
+    border: 2px solid #ccc;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-profile-logout:hover {
+    border-color: #999;
+    color: #333;
+}
+
+.messages {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+.messages .alert {
+    padding: 12px;
+    background: #e9f6ff;
+    color: #0077cc;
+    border-radius: 6px;
+}
