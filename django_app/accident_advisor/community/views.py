@@ -23,8 +23,14 @@ from .forms import PostForm, CommentForm
 import json
 
 def post_list(request):
+    # 모든 카테고리 가져오기
+    categories = Category.objects.all()
     # 기본 쿼리셋
     posts = Post.objects.filter(is_active=True).select_related('author', 'category')
+    # 카테고리 필터링
+    category_id = request.GET.get('category')
+    if category_id:
+        posts = posts.filter(category_id=category_id)
 
     # 필터 조건들 저장
     filters = Q()
@@ -58,9 +64,9 @@ def post_list(request):
 
     # post_type 라벨 정의
     POST_TYPE_LABELS = {
-        'pedestrian': '차 vs 보행자',
-        'car': '차 vs 차',
-        'bike': '차 vs 자전거(농기구)',
+        'pedestrian': '차vs보행자',
+        'car': '차vs차',
+        'bike': '차vs자전거(농기구)',
         'legal': '법률상담',
         'free': '자유',
     }
@@ -71,8 +77,10 @@ def post_list(request):
         post.post_type_label = POST_TYPE_LABELS.get(post.post_type, '기타')
 
     context = {
+        'categories': categories,
         'posts': page_obj,
         'search_query': search_query,
+        'selected_category': int(category_id) if category_id else None,
         'selected_type': post_type,
         'selected_tag': tag_query,
         'post_type_labels': POST_TYPE_LABELS,
