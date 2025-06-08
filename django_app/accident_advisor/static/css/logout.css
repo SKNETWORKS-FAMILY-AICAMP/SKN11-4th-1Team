@@ -1,0 +1,62 @@
+.logout-container {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 40px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    text-align: center;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.logout-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.logout-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+/* 로그인 버튼 (파란색) */
+.btn-logout-login {
+    background-color: #4285f4;
+    color: white ;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none ;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+}
+.btn-logout-login:hover {
+    background-color: #1976d2;
+    color: #f1f1f1 ;
+}
+
+/* 메인으로 버튼 (회색 테두리) */
+.btn-logout-home {
+    background-color: white;
+    color: #666 ;
+    padding: 10px 24px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none ;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+}
+.btn-logout-home:hover {
+    color: #333 !important;
+    border-color: #999;
+    background-color: #f9f9f9;
+}

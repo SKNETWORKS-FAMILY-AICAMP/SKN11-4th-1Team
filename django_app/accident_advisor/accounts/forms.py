@@ -72,3 +72,13 @@ class LoginForm(forms.Form):
             'placeholder': '비밀번호를 입력하세요'
         })
     )
+
+# 프로필 수정 폼
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['nickname', 'email', 'profile_image']
+        widgets = {
+            'nickname': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
