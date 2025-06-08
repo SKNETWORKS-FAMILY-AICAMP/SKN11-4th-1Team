@@ -158,7 +158,7 @@ def post_create(request):
                 )
                 
                 # 카테고리 게시글 수 업데이트 (related_name 변경에 따른 수정)
-                category.post_count = category.community_posts.filter(is_active=True).count()
+                category.post_count = category.posts.filter(is_active=True).count()
                 category.save(update_fields=['post_count'])
                 
                 return JsonResponse({
@@ -206,7 +206,7 @@ def post_create(request):
                 )
                 
                 # 카테고리 게시글 수 업데이트
-                category.post_count = category.community_posts.filter(is_active=True).count()
+                category.post_count = category.posts.filter(is_active=True).count()
                 category.save(update_fields=['post_count'])
                 
                 messages.success(request, '게시글이 작성되었습니다.')
@@ -221,7 +221,7 @@ def post_create(request):
     
     # 각 카테고리의 커뮤니티 게시글 수를 미리 계산
     for category in categories:
-        category.community_post_count = category.community_posts.filter(is_active=True).count()
+        category.community_post_count = category.posts.filter(is_active=True).count()
     
     context = {
         'categories': categories,
@@ -239,7 +239,7 @@ def category_list_api(request):
         categories_data = []
         for category in categories:
             # 커뮤니티 게시글 수 계산 (related_name 변경에 따른 수정)
-            community_post_count = category.community_posts.filter(is_active=True).count()
+            community_post_count = category.posts.filter(is_active=True).count()
             
             categories_data.append({
                 'id': category.id,
