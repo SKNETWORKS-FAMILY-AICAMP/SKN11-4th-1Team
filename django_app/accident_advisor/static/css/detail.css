@@ -1,0 +1,26 @@
+.post-content {
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+
+.comment-item {
+    border-left: 3px solid #007bff;
+}
+
+.tags .badge {
+    font-size: 0.8rem;
+}
+
+.like-btn.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.action-buttons .btn {
+    transition: all 0.2s ease;
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-1px);
+}
