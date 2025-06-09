@@ -24,9 +24,10 @@
                     <span class="badge bg-primary me-2">{{ post.category.name }}</span>
                     <h2 class="card-title mb-3">{{ post.title }}</h2>
                     <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">                            
+                        <div class="d-flex align-items-center">
                             <small class="text-muted">
-                                <i class="fas fa-user me-1"></i> 🧑‍💻 {{ post.author.nickname|default:post.author.username }}
+                                <i class="fas fa-user me-1"></i>
+                                🧑‍💻 {{ post.author.nickname|default:post.author.username }}
                                 <i class="fas fa-calendar ms-3 me-1"></i>{{ post.created_at|date:"Y-m-d H:i" }}
                                 <i class="fas fa-eye ms-3 me-1"></i>👁️‍🗨️ {{ post.view_count }}
                             </small>
@@ -58,14 +59,11 @@
                         <div class="action-buttons">
                             {% if user.is_authenticated %}
                             <button class="btn btn-outline-danger btn-sm like-btn" data-post-id="{{ post.id }}"
-                                data-liked="{{ user_liked|yesno:'true,false' }}">
+                                data-liked="{{ user_liked|yesno:'true,false' }}"
+                                data-toggle-url="{% url 'community:toggle_like' post.id %}">
                                 <i class="fas fa-heart{% if not user_liked %}-o{% endif %} me-1"></i>
                                 <span class="like-count">❤️{{ post.like_count }}</span>
                             </button>
-                            <!-- <button class="btn btn-outline-danger btn-sm like-btn" 
-                                data-post-id="{{ post.id }}"
-                                data-liked="{{ user_liked|yesno:'true,false' }}"
-                                data-toggle-url="{% url 'community:toggle_like' post.id %}"> -->
                             {% else %}
                             <span class="text-muted">
                                 <i class="fas fa-heart me-1"></i>❤️{{ post.like_count }}
