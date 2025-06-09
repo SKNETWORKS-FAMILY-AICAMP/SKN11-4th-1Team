@@ -278,9 +278,32 @@ def post_detail(request, post_id):
     post.view_count += 1
     post.save(update_fields=['view_count'])
     
+    # 댓글 목록 추가
+    comments = Comment.objects.filter(post=post, is_active=True).select_related('author').order_by('created_at')
+    # 댓글 작성 폼 준비 (로그인한 경우)
+    comment_form = CommentForm() if request.user.is_authenticated else None
+
+    # 게시글 좋아요 여부
+    user_liked = False
+    comment_likes_map = {}
+    if request.user.is_authenticated:
+        user_liked = PostLike.objects.filter(post=post, user=request.user).exists()
+        # 댓글별 좋아요 여부
+        liked_comment_ids = set(
+            CommentLike.objects.filter(
+                comment__in=comments, user=request.user
+            ).values_list('comment_id', flat=True)
+        )
+        for comment in comments:
+            comment.user_liked = comment.id in liked_comment_ids
+
     context = {
         'post': post,
-        'tags': post.get_tags_list()
+        'tags': post.get_tags_list(),
+        'comments': comments,
+        'comment_form': comment_form,
+        'title': '게시글 상세',
+        'user_liked': user_liked,
     }
     return render(request, 'community/detail.html', context)
 
@@ -328,10 +351,13 @@ def toggle_like(request, post_id):
         })
         
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
+        return JsonResponse(
+            {
+                'success': False,
+                'error': str(e)
+            }, 
+            status=500,
+        )
 
 
 @login_required
@@ -393,3 +419,113 @@ def post_delete(request, post_id):
     }
     
     return render(request, 'community/delete_confirm.html', context)
+
+@login_required
+@require_POST
+def comment_create(request, post_id):
+    """
+    댓글 등록 (AJAX 및 일반 폼 지원)
+    """
+    post = get_object_or_404(Post, id=post_id, is_active=True)
+    user = request.user
+
+    # AJAX 요청 (JSON)
+    if request.headers.get('Content-Type') == 'application/json':
+        try:
+            data = json.loads(request.body)
+            content = data.get('content', '').strip()
+            if not content:
+                return JsonResponse({'success': False, 'error': '댓글 내용을 입력해주세요.'})
+            comment = Comment.objects.create(
+                post=post,
+                author=user,
+                content=content,
+                is_active=True
+            )
+            # 댓글 수 갱신
+            post.comment_count = Comment.objects.filter(post=post, is_active=True).count()
+            post.save(update_fields=['comment_count'])
+            return JsonResponse({
+                'success': True,
+                'comment_id': comment.id,
+                'content': comment.content,
+                'author': comment.author.nickname or comment.author.username,
+                'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M'),
+                'comment_count': post.comment_count
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+    # 일반 폼 제출
+    content = request.POST.get('content', '').strip()
+    if not content:
+        messages.error(request, '댓글 내용을 입력해주세요.')
+        return redirect('community:detail', post_id=post.id)
+    comment = Comment.objects.create(
+        post=post,
+        author=user,
+        content=content,
+        is_active=True
+    )
+    post.comment_count = Comment.objects.filter(post=post, is_active=True).count()
+    post.save(update_fields=['comment_count'])
+    messages.success(request, '댓글이 등록되었습니다.')
+    return redirect('community:detail', post_id=post.id)
+
+@login_required
+@require_http_methods(["GET"])
+def comment_delete(request, comment_id):
+    """
+    댓글 삭제 (is_active=False, AJAX 및 일반 폼 지원)
+    """
+    comment = get_object_or_404(Comment, id=comment_id, author=request.user, is_active=True)
+    post = comment.post
+    
+    # 일반 폼 제출
+    comment.is_active = False
+    comment.save()
+    
+    post.comment_count = Comment.objects.filter(post=post, is_active=True).count()
+    post.save()
+    
+    messages.success(request, '댓글이 삭제되었습니다.')
+
+    return redirect('community:detail', post_id=post.id)
+
+@login_required
+@require_POST
+def comment_like(request, comment_id):
+    """
+    댓글 좋아요 토글 (AJAX)
+    """
+    try:
+        comment = get_object_or_404(Comment, id=comment_id, is_active=True)
+        user = request.user
+
+        like, created = CommentLike.objects.get_or_create(
+            user=user,
+            comment=comment
+        )
+
+        if created:
+            # 좋아요 추가
+            comment.like_count += 1
+            comment.save(update_fields=['like_count'])
+            liked = True
+            message = '좋아요!'
+        else:
+            # 좋아요 취소
+            like.delete()
+            comment.like_count -= 1
+            comment.save(update_fields=['like_count'])
+            liked = False
+            message = '좋아요 취소'
+
+        return JsonResponse({
+            'success': True,
+            'liked': liked,
+            'like_count': comment.like_count,
+            'message': message
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
