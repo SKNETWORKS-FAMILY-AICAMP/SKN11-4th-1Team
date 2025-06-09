@@ -1,134 +1,70 @@
 {% extends 'base.html' %}
-{% load static %}
-
-
-
-{% block title %}커뮤니티 - 게시글 작성{% endblock %}
-
-
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<!-- 외부 CSS 파일 연결 -->
-<link rel="stylesheet" href="{% static 'css/write.css' %}">
+<div class="container mt-5">
+  <h2 class="mb-4">✏️ {{ title }}</h2>
 
-<!-- 페이지 헤더 -->
-<div class="auth-header">
-    <h2>✍️ 새 게시글 작성</h2>
-    <p>커뮤니티에 새로운 이야기를 공유해보세요</p>
-</div>
-
-<form id="postForm" onsubmit="submitPost(event)">
+  <form method="post">
     {% csrf_token %}
-    <!-- 게시글 유형 선택 -->
-    <div class="post-item">
-        <h3>📝 게시글 유형</h3>
-        <div class="post-type-group">
-            <div class="post-type-option">
-                <input type="radio" id="type_general" name="post_type" value="general" class="post-type-radio" checked>
-                <label for="type_general" class="post-type-label">
-                    <div class="post-type-title">💬 일반 게시글</div>
-                    <div class="post-type-desc">자유로운 주제로 이야기를 나눠보세요</div>
-                </label>
-            </div>
-            <div class="post-type-option">
-                <input type="radio" id="type_question" name="post_type" value="question" class="post-type-radio">
-                <label for="type_question" class="post-type-label">
-                    <div class="post-type-title">❓ 질문</div>
-                    <div class="post-type-desc">궁금한 것을 물어보세요</div>
-                </label>
-            </div>
-            <div class="post-type-option">
-                <input type="radio" id="type_tip" name="post_type" value="tip" class="post-type-radio">
-                <label for="type_tip" class="post-type-label">
-                    <div class="post-type-title">💡 팁 & 노하우</div>
-                    <div class="post-type-desc">유용한 정보를 공유해주세요</div>
-                </label>
-            </div>
-        </div>
+
+    <!-- 제목 -->
+    <div class="mb-3">
+      <label for="title" class="form-label">제목</label>
+      <input type="text" class="form-control" name="title" id="title"
+             placeholder="제목을 입력하세요" required
+             value="{{ post.title|default_if_none:'' }}">
     </div>
 
-    <!-- 카테고리 선택 -->
-    <div class="post-item">
-        <h3>🏷️ 카테고리 선택 <span class="required">*</span></h3>
-        <div class="category-filter">
-            {% for category in categories %}
-            <button type="button" class="category-btn" data-category="{{ category.name }}" data-id="{{ category.id }}"
-                title="{{ category.description }}">
-                {{ category.name }}
-                {% if category.post_count > 0 %}
-                <span class="post-count">({{ category.post_count }})</span>
-                {% endif %}
-            </button>
-            {% empty %}
-            <div class="no-categories">
-                <p>등록된 카테고리가 없습니다.</p>
-                <p><small>관리자에게 문의하세요.</small></p>
-            </div>
-            {% endfor %}
-        </div>
-        <input type="hidden" id="selectedCategory" name="category" required>
-        <input type="hidden" id="selectedCategoryId" name="category_id">
-    </div>
-    <!-- 제목 입력 -->
-    <div class="post-item">
-        <h3>📄 게시글 정보</h3>
-        <div class="auth-form">
-            <div class="form-group">
-                <label for="postTitle">제목 <span class="required">*</span></label>
-                <input type="text" id="postTitle" name="title" class="form-control" placeholder="게시글 제목을 입력해주세요"
-                    maxlength="100" required>
-                <div class="char-counter" id="titleCounter">0 / 100</div>
-            </div>
-
-        </div>
+    <!-- 게시글 유형 -->
+    <div class="mb-3">
+      <label for="post_type" class="form-label">게시글 유형</label>
+      <select class="form-select" name="post_type" id="post_type" required>
+        {% for value, label in post_types %}
+        <option value="{{ value }}"
+          {% if post and post.post_type == value %}
+            selected
+          {% elif not post and forloop.first %}
+            selected
+          {% endif %}>
+          {{ label }}
+        </option>
+        {% endfor %}
+      </select>
     </div>
 
-    <!-- 내용 입력 -->
-    <div class="post-item">
-        <h3>📝 내용 작성</h3>
-        <div class="auth-form">
-            <div class="form-group">
-                <div class="toolbar">
-                    <button type="button" class="toolbar-btn" onclick="togglePreview()">
-                        👁️ 미리보기
-                    </button>
-                </div>
-                <textarea id="postContent" name="content" class="form-control textarea" placeholder="게시글 내용을 작성해주세요..."
-                    required></textarea>
-                <div class="char-counter" id="contentCounter">0자</div>
-            </div>
-        </div>
+    <!-- 카테고리 -->
+    <div class="mb-3">
+      <label for="category" class="form-label">카테고리</label>
+      <select class="form-select" name="category" id="category" required>
+        <option value="">-- 카테고리 선택 --</option>
+        {% for cat in categories %}
+        <option value="{{ cat.id }}"
+          {% if post and post.category.id == cat.id %}
+            selected
+          {% endif %}>
+          {{ cat.icon }} {{ cat.name }}
+        </option>
+        {% endfor %}
+      </select>
     </div>
 
-    <!-- 태그 입력 -->
-    <div class="post-item">
-        <h3>🏷️ 태그</h3>
-        <div class="auth-form">
-            <div class="form-group">
-                <label for="tagInput">태그 (최대 5개)(#으로 구분)</label>
-                <div class="tags-input-container">
-                    <div class="tags-display" onclick="focusTagInput()">
-                        <input type="text" id="tagInput" class="tag-input" placeholder="태그를 입력하고 Enter를 누르세요">
-                    </div>
-                    <div class="tag-suggestions" id="tagSuggestions"></div>
-                </div>
-            </div>
-        </div>
+    <!-- 내용 -->
+    <div class="mb-3">
+      <label for="content" class="form-label">내용</label>
+      <textarea class="form-control" name="content" id="content" rows="8"
+                placeholder="내용을 입력하세요" required>{{ post.content|default_if_none:'' }}</textarea>
     </div>
-</form>
-<!-- 폼 액션 버튼 -->
-<div class="form-actions">
-    <button type="button" class="btn-secondary" onclick="goBack()">
-        ❌ 취소
-    </button>
-    <button type="button" class="like-btn" onclick="saveDraft()">
-        💾 임시저장
-    </button>
-    <button type="submit" class="btn-primary" id="submitBtn">
-        ✨ 게시글 등록
-    </button>
+
+    <!-- 태그 -->
+    <div class="mb-3">
+      <label for="tags" class="form-label">태그</label>
+      <input type="text" class="form-control" name="tags" id="tags"
+             placeholder="쉼표로 구분 (예: 교차로,과실,우회전)"
+             value="{{ post.tags|default_if_none:'' }}">
+    </div>
+
+    <button type="submit" class="btn btn-primary">작성 완료</button>
+  </form>
 </div>
-
-<!-- 외부 JS 파일 연결 -->
-<script src="{% static 'js/write.js' %}"></script>
 {% endblock %}
