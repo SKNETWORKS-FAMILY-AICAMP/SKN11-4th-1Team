@@ -405,3 +405,75 @@ def post_delete(request, post_id):
     }
     
     return render(request, 'community/delete_confirm.html', context)
+
+@login_required
+@require_POST
+def comment_create(request, post_id):
+    """
+    댓글 등록 (AJAX 및 일반 폼 지원)
+    """
+    post = get_object_or_404(Post, id=post_id, is_active=True)
+    user = request.user
+
+    # AJAX 요청 (JSON)
+    if request.headers.get('Content-Type') == 'application/json':
+        try:
+            data = json.loads(request.body)
+            content = data.get('content', '').strip()
+            if not content:
+                return JsonResponse({'success': False, 'error': '댓글 내용을 입력해주세요.'})
+            comment = Comment.objects.create(
+                post=post,
+                author=user,
+                content=content,
+                is_active=True
+            )
+            # 댓글 수 갱신
+            post.comment_count = Comment.objects.filter(post=post, is_active=True).count()
+            post.save(update_fields=['comment_count'])
+            return JsonResponse({
+                'success': True,
+                'comment_id': comment.id,
+                'content': comment.content,
+                'author': comment.author.nickname or comment.author.username,
+                'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M'),
+                'comment_count': post.comment_count
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+    # 일반 폼 제출
+    content = request.POST.get('content', '').strip()
+    if not content:
+        messages.error(request, '댓글 내용을 입력해주세요.')
+        return redirect('community:detail', post_id=post.id)
+    comment = Comment.objects.create(
+        post=post,
+        author=user,
+        content=content,
+        is_active=True
+    )
+    post.comment_count = Comment.objects.filter(post=post, is_active=True).count()
+    post.save(update_fields=['comment_count'])
+    messages.success(request, '댓글이 등록되었습니다.')
+    return redirect('community:detail', post_id=post.id)
+
+@login_required
+@require_http_methods(["GET"])
+def comment_delete(request, comment_id):
+    """
+    댓글 삭제 (is_active=False, AJAX 및 일반 폼 지원)
+    """
+    comment = get_object_or_404(Comment, id=comment_id, author=request.user, is_active=True)
+    post = comment.post
+    
+    # 일반 폼 제출
+    comment.is_active = False
+    comment.save()
+    
+    post.comment_count = Comment.objects.filter(post=post, is_active=True).count()
+    post.save()
+    
+    messages.success(request, '댓글이 삭제되었습니다.')
+
+    return redirect('community:detail', post_id=post.id)

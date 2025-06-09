@@ -16,11 +16,14 @@ urlpatterns = [
     # 게시글 작성 (팀원 D)
     path('write/', views.post_create, name='create'),
     path('post/create/', views.post_create, name='post_create'),    
-
-    # 좋아요 기능 (팀원 C가 AJAX로 사용)
-    path('<int:post_id>/like/', views.toggle_like, name='toggle_like'),
-    
     # 게시글 수정/삭제 (선택사항)
     path('<int:post_id>/edit/', views.post_edit, name='edit'),
     path('<int:post_id>/delete/', views.post_delete, name='delete'),
+
+    # 좋아요 기능 (팀원 C가 AJAX로 사용)
+    path('<int:post_id>/like/', views.toggle_like, name='toggle_like'),
+
+    # 댓글 추가/삭제 (선택사항)
+    path('<int:post_id>/comment/create/', views.comment_create, name='comment_create'),
+    path('comment/<int:comment_id>/delete/', views.comment_delete, name='comment_delete'),
 ]

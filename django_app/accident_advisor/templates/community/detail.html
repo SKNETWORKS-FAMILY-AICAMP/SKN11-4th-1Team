@@ -106,13 +106,14 @@
                 <div class="card-body">
                     <!-- 댓글 작성 폼 - 로그인한 상태에서만 가능하도록 -->
                     {% if user.is_authenticated %}
-                    <form method="post" class="mb-4">
+                    <form id="commentForm" method="post" class="mb-4" onsubmit="submitComment(event)">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="{{ comment_form.content.id_for_label }}" class="form-label">댓글 작성</label>
                             {{ comment_form.content }}
                         </div>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary" id="commentSubmitBtn"
+                            data-create-url="{% url 'community:comment_create' post.id %}">
                             <i class="fas fa-paper-plane me-1"></i>댓글 등록
                         </button>
                     </form>
@@ -128,7 +129,7 @@
                     {% if comments %}
                     <div class="comments-list">
                         {% for comment in comments %}
-                        <div class="comment-item mb-3 p-3 bg-light rounded">
+                        <div class="comment-item mb-3 p-3 bg-light rounded" id="comment-{{ comment.id }}">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="comment-header mb-2">
                                     <strong>{{ comment.author.nickname|default:comment.author.username }}</strong>
@@ -136,13 +137,19 @@
                                         <i class="fas fa-clock me-1"></i>{{ comment.created_at|date:"Y-m-d H:i" }}
                                     </small>
                                 </div>
-                                {% if comment.like_count >= 0 %}
-                                <span class="badge bg-danger">
-                                    <i class="fas fa-heart me-1"></i>{{ comment.like_count }}
-                                </span>
-                                {% endif %}
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if comment.like_count >= 0 %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-heart me-1"></i>{{ comment.like_count }}
+                                    </span>
+                                    {% endif %}
+                                    {% if user == comment.author %}
+                                    <a href="{% url 'community:comment_delete' comment.id %}"
+                                        class="btn btn-outline-danger btn-sm">삭제</a>
+                                    {% endif %}
+                                </div>
                             </div>
-                            <div class="comment-content">
+                            <div class="comment-content" id="comment-content-{{ comment.id }}">
                                 {{ comment.content|linebreaksbr }}
                             </div>
                         </div>
@@ -180,4 +187,38 @@
 
 
 <script src="{% static 'js/detail.js' %}"></script>
+<script>
+    function submitComment(event) {
+        event.preventDefault();
+        const form = document.getElementById('commentForm');
+        const textarea = form.querySelector('textarea');
+        const content = textarea.value.trim();
+        const submitBtn = document.getElementById('commentSubmitBtn');
+        const url = submitBtn.getAttribute('data-create-url');
+        if (!content) {
+            alert('댓글 내용을 입력해주세요.');
+            textarea.focus();
+            return;
+        }
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({ content: content })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.error || "댓글 등록 중 오류가 발생했습니다.");
+                }
+            })
+            .catch(() => {
+                alert("댓글 등록 중 오류가 발생했습니다.");
+            });
+    }
+</script>
 {% endblock %}
