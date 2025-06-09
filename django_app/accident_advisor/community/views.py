@@ -278,9 +278,18 @@ def post_detail(request, post_id):
     post.view_count += 1
     post.save(update_fields=['view_count'])
     
+    # 댓글 목록 추가
+    comments = Comment.objects.filter(post=post, is_active=True).select_related('author').order_by('created_at')
+    # 댓글 작성 폼 준비 (로그인한 경우)
+    comment_form = CommentForm() if request.user.is_authenticated else None
+
+
     context = {
         'post': post,
-        'tags': post.get_tags_list()
+        'tags': post.get_tags_list(),
+        'comments': comments,
+        'comment_form': comment_form,
+        'title': '게시글 상세'
     }
     return render(request, 'community/detail.html', context)
 
@@ -328,10 +337,13 @@ def toggle_like(request, post_id):
         })
         
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
+        return JsonResponse(
+            {
+                'success': False,
+                'error': str(e)
+            }, 
+            status=500,
+        )
 
 
 @login_required
