@@ -58,9 +58,10 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="action-buttons">
                             {% if user.is_authenticated %}
-                            <button class="btn btn-outline-danger btn-sm like-btn" data-post-id="{{ post.id }}"
-                                data-liked="{{ user_liked|yesno:'true,false' }}"
-                                data-toggle-url="{% url 'community:toggle_like' post.id %}">
+                            <button class="btn btn-outline-danger btn-sm like-btn"
+                                    data-post-id="{{ post.id }}"
+                                    data-liked="{{ user_liked|yesno:'true,false' }}"
+                                    data-toggle-url="{% url 'community:toggle_like' post.id %}">
                                 <i class="fas fa-heart{% if not user_liked %}-o{% endif %} me-1"></i>
                                 <span class="like-count">❤️{{ post.like_count }}</span>
                             </button>
@@ -139,10 +140,21 @@
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
                                     {% if comment.like_count >= 0 %}
-                                    <span class="badge bg-danger">
-                                        <i class="fas fa-heart me-1"></i>{{ comment.like_count }}
+                                    {% if user.is_authenticated %}
+                                    <button class="btn btn-outline-danger btn-sm comment-like-btn"
+                                            data-comment-id="{{ comment.id }}"
+                                            data-liked="false"
+                                            data-toggle-url="{% url 'community:comment_like' comment.id %}">
+                                        <i class="fas fa-heart me-1"></i>
+                                        <span class="like-count">❤️{{ comment.like_count }}</span>
+                                    </button>
+                                    {% else %}
+                                    <span class="text-muted">
+                                        <i class="fas fa-heart me-1"></i>❤️{{ comment.like_count }}
                                     </span>
                                     {% endif %}
+                                    {% endif %}
+
                                     {% if user == comment.author %}
                                     <a href="{% url 'community:comment_delete' comment.id %}"
                                         class="btn btn-outline-danger btn-sm">삭제</a>
@@ -220,5 +232,75 @@
                 alert("댓글 등록 중 오류가 발생했습니다.");
             });
     }
+
+    // 게시글 좋아요 버튼 동작 추가
+    document.addEventListener('DOMContentLoaded', function() {
+        // 게시글 좋아요
+        const likeBtn = document.querySelector('.like-btn[data-post-id]');
+        if (likeBtn) {
+            likeBtn.addEventListener('click', function() {
+                const url = likeBtn.getAttribute('data-toggle-url');
+                fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}",
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const likeCountSpan = likeBtn.querySelector('.like-count');
+                        likeCountSpan.textContent = `❤️${data.like_count}`;
+                        if (data.liked) {
+                            likeBtn.classList.remove('btn-outline-danger');
+                            likeBtn.classList.add('btn-danger');
+                        } else {
+                            likeBtn.classList.remove('btn-danger');
+                            likeBtn.classList.add('btn-outline-danger');
+                        }
+                    } else {
+                        alert(data.error || "좋아요 처리 중 오류가 발생했습니다.");
+                    }
+                })
+                .catch(() => {
+                    alert("좋아요 처리 중 오류가 발생했습니다.");
+                });
+            });
+        }
+
+        // 댓글 좋아요 (여러 개이므로 querySelectorAll)
+        document.querySelectorAll('.comment-like-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const url = btn.getAttribute('data-toggle-url');
+                fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}",
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const likeCountSpan = btn.querySelector('.like-count');
+                        likeCountSpan.textContent = `❤️${data.like_count}`;
+                        if (data.liked) {
+                            btn.classList.remove('btn-outline-danger');
+                            btn.classList.add('btn-danger');
+                        } else {
+                            btn.classList.remove('btn-danger');
+                            btn.classList.add('btn-outline-danger');
+                        }
+                    } else {
+                        alert(data.error || "댓글 좋아요 처리 중 오류가 발생했습니다.");
+                    }
+                })
+                .catch(() => {
+                    alert("댓글 좋아요 처리 중 오류가 발생했습니다.");
+                });
+            });
+        });
+    });
 </script>
 {% endblock %}

@@ -477,3 +477,41 @@ def comment_delete(request, comment_id):
     messages.success(request, '댓글이 삭제되었습니다.')
 
     return redirect('community:detail', post_id=post.id)
+
+@login_required
+@require_POST
+def comment_like(request, comment_id):
+    """
+    댓글 좋아요 토글 (AJAX)
+    """
+    try:
+        comment = get_object_or_404(Comment, id=comment_id, is_active=True)
+        user = request.user
+
+        like, created = CommentLike.objects.get_or_create(
+            user=user,
+            comment=comment
+        )
+
+        if created:
+            # 좋아요 추가
+            comment.like_count += 1
+            comment.save(update_fields=['like_count'])
+            liked = True
+            message = '좋아요!'
+        else:
+            # 좋아요 취소
+            like.delete()
+            comment.like_count -= 1
+            comment.save(update_fields=['like_count'])
+            liked = False
+            message = '좋아요 취소'
+
+        return JsonResponse({
+            'success': True,
+            'liked': liked,
+            'like_count': comment.like_count,
+            'message': message
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

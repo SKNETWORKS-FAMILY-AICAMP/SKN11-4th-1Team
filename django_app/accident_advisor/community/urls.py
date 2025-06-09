@@ -26,4 +26,7 @@ urlpatterns = [
     # 댓글 추가/삭제 (선택사항)
     path('<int:post_id>/comment/create/', views.comment_create, name='comment_create'),
     path('comment/<int:comment_id>/delete/', views.comment_delete, name='comment_delete'),
+
+    # 좋아요 기능 (팀원 C가 AJAX로 사용)
+    path('comment/<int:comment_id>/like/', views.comment_like, name='comment_like'),
 ]
