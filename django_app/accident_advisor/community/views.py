@@ -283,13 +283,27 @@ def post_detail(request, post_id):
     # 댓글 작성 폼 준비 (로그인한 경우)
     comment_form = CommentForm() if request.user.is_authenticated else None
 
+    # 게시글 좋아요 여부
+    user_liked = False
+    comment_likes_map = {}
+    if request.user.is_authenticated:
+        user_liked = PostLike.objects.filter(post=post, user=request.user).exists()
+        # 댓글별 좋아요 여부
+        liked_comment_ids = set(
+            CommentLike.objects.filter(
+                comment__in=comments, user=request.user
+            ).values_list('comment_id', flat=True)
+        )
+        for comment in comments:
+            comment.user_liked = comment.id in liked_comment_ids
 
     context = {
         'post': post,
         'tags': post.get_tags_list(),
         'comments': comments,
         'comment_form': comment_form,
-        'title': '게시글 상세'
+        'title': '게시글 상세',
+        'user_liked': user_liked,
     }
     return render(request, 'community/detail.html', context)
 

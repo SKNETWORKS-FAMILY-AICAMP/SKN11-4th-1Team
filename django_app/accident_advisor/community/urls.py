@@ -18,15 +18,13 @@ urlpatterns = [
     path('post/create/', views.post_create, name='post_create'),    
     # 게시글 수정/삭제 (선택사항)
     path('<int:post_id>/edit/', views.post_edit, name='edit'),
-    path('<int:post_id>/delete/', views.post_delete, name='delete'),
-
-    # 좋아요 기능 (팀원 C가 AJAX로 사용)
-    path('<int:post_id>/like/', views.toggle_like, name='toggle_like'),
+    path('<int:post_id>/delete/', views.post_delete, name='delete'),    
 
     # 댓글 추가/삭제 (선택사항)
     path('<int:post_id>/comment/create/', views.comment_create, name='comment_create'),
     path('comment/<int:comment_id>/delete/', views.comment_delete, name='comment_delete'),
 
     # 좋아요 기능 (팀원 C가 AJAX로 사용)
+    path('<int:post_id>/like/', views.toggle_like, name='toggle_like'),
     path('comment/<int:comment_id>/like/', views.comment_like, name='comment_like'),
 ]

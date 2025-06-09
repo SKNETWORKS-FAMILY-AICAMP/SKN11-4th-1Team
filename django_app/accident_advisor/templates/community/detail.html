@@ -58,7 +58,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="action-buttons">
                             {% if user.is_authenticated %}
-                            <button class="btn btn-outline-danger btn-sm like-btn"
+                            <button class="btn btn-sm like-btn {% if user_liked %}btn-danger{% else %}btn-outline-danger{% endif %}"
                                     data-post-id="{{ post.id }}"
                                     data-liked="{{ user_liked|yesno:'true,false' }}"
                                     data-toggle-url="{% url 'community:toggle_like' post.id %}">
@@ -70,7 +70,6 @@
                                 <i class="fas fa-heart me-1"></i>❤️{{ post.like_count }}
                             </span>
                             {% endif %}
-
                             <button class="btn btn-primary btn-sm ms-1" onclick="sharePost()">
                                 <i class="fa fa-share me-1"></i>공유하기
                             </button>
@@ -141,11 +140,11 @@
                                 <div class="d-flex align-items-center gap-2">
                                     {% if comment.like_count >= 0 %}
                                     {% if user.is_authenticated %}
-                                    <button class="btn btn-outline-danger btn-sm comment-like-btn"
+                                    <button class="btn btn-sm comment-like-btn {% if comment.user_liked %}btn-danger{% else %}btn-outline-danger{% endif %}"
                                             data-comment-id="{{ comment.id }}"
-                                            data-liked="false"
+                                            data-liked="{{ comment.user_liked|yesno:'true,false' }}"
                                             data-toggle-url="{% url 'community:comment_like' comment.id %}">
-                                        <i class="fas fa-heart me-1"></i>
+                                        <i class="fas fa-heart{% if not comment.user_liked %}-o{% endif %} me-1"></i>
                                         <span class="like-count">❤️{{ comment.like_count }}</span>
                                     </button>
                                     {% else %}
@@ -199,108 +198,4 @@
 
 
 <script src="{% static 'js/detail.js' %}"></script>
-<script>
-    function submitComment(event) {
-        event.preventDefault();
-        const form = document.getElementById('commentForm');
-        const textarea = form.querySelector('textarea');
-        const content = textarea.value.trim();
-        const submitBtn = document.getElementById('commentSubmitBtn');
-        const url = submitBtn.getAttribute('data-create-url');
-        if (!content) {
-            alert('댓글 내용을 입력해주세요.');
-            textarea.focus();
-            return;
-        }
-        fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": "{{ csrf_token }}"
-            },
-            body: JSON.stringify({ content: content })
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert(data.error || "댓글 등록 중 오류가 발생했습니다.");
-                }
-            })
-            .catch(() => {
-                alert("댓글 등록 중 오류가 발생했습니다.");
-            });
-    }
-
-    // 게시글 좋아요 버튼 동작 추가
-    document.addEventListener('DOMContentLoaded', function() {
-        // 게시글 좋아요
-        const likeBtn = document.querySelector('.like-btn[data-post-id]');
-        if (likeBtn) {
-            likeBtn.addEventListener('click', function() {
-                const url = likeBtn.getAttribute('data-toggle-url');
-                fetch(url, {
-                    method: "POST",
-                    headers: {
-                        "X-CSRFToken": "{{ csrf_token }}",
-                        "X-Requested-With": "XMLHttpRequest"
-                    }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        const likeCountSpan = likeBtn.querySelector('.like-count');
-                        likeCountSpan.textContent = `❤️${data.like_count}`;
-                        if (data.liked) {
-                            likeBtn.classList.remove('btn-outline-danger');
-                            likeBtn.classList.add('btn-danger');
-                        } else {
-                            likeBtn.classList.remove('btn-danger');
-                            likeBtn.classList.add('btn-outline-danger');
-                        }
-                    } else {
-                        alert(data.error || "좋아요 처리 중 오류가 발생했습니다.");
-                    }
-                })
-                .catch(() => {
-                    alert("좋아요 처리 중 오류가 발생했습니다.");
-                });
-            });
-        }
-
-        // 댓글 좋아요 (여러 개이므로 querySelectorAll)
-        document.querySelectorAll('.comment-like-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                const url = btn.getAttribute('data-toggle-url');
-                fetch(url, {
-                    method: "POST",
-                    headers: {
-                        "X-CSRFToken": "{{ csrf_token }}",
-                        "X-Requested-With": "XMLHttpRequest"
-                    }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        const likeCountSpan = btn.querySelector('.like-count');
-                        likeCountSpan.textContent = `❤️${data.like_count}`;
-                        if (data.liked) {
-                            btn.classList.remove('btn-outline-danger');
-                            btn.classList.add('btn-danger');
-                        } else {
-                            btn.classList.remove('btn-danger');
-                            btn.classList.add('btn-outline-danger');
-                        }
-                    } else {
-                        alert(data.error || "댓글 좋아요 처리 중 오류가 발생했습니다.");
-                    }
-                })
-                .catch(() => {
-                    alert("댓글 좋아요 처리 중 오류가 발생했습니다.");
-                });
-            });
-        });
-    });
-</script>
 {% endblock %}
