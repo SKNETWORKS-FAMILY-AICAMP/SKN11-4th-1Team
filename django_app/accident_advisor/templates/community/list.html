@@ -18,10 +18,13 @@
     </form>
 
     <!-- 카테고리 필터 -->
-    <div class="mb-4">
-        <a href="{% url 'community:list' %}" class="btn btn-sm {% if not selected_category %}btn-primary{% else %}btn-outline-primary{% endif %}">전체</a>
+    <div class="mb-4 d-flex flex-wrap gap-2">
+        <a href="{% url 'community:list' %}" class="btn btn-sm {% if not selected_category %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            전체
+        </a>
         {% for cat in categories %}
-            <a href="?category={{ cat.id }}" class="btn btn-sm {% if selected_category == cat.id %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            <a href="?category={{ cat.id }}" class="btn btn-sm d-flex align-items-center gap-1
+               {% if selected_category == cat.id %}btn-primary{% else %}btn-outline-primary{% endif %}">
                 {{ cat.name }}
             </a>
         {% endfor %}
@@ -35,7 +38,7 @@
                     <a href="{% url 'community:detail' post.id %}" class="text-decoration-none text-dark">
                         <!-- 제목 + 날짜 -->
                         <div class="d-flex justify-content-between align-items-center">
-                            <strong>[{{ post.post_type_label }}] {{ post.title }}</strong>
+                            <strong>[{{ post.category.name }}] {{ post.title }}</strong>
                             <small class="text-muted">{{ post.created_at|date:"Y-m-d H:i" }}</small>
                         </div>
 
