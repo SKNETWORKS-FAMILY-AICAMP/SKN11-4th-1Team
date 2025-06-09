@@ -2,69 +2,74 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-  <h2 class="mb-4">✏️ {{ title }}</h2>
-
-  <form method="post">
-    {% csrf_token %}
-
-    <!-- 제목 -->
-    <div class="mb-3">
-      <label for="title" class="form-label">제목</label>
-      <input type="text" class="form-control" name="title" id="title"
-             placeholder="제목을 입력하세요" required
-             value="{{ post.title|default_if_none:'' }}">
+<div class="container py-5">
+  <div class="card shadow-sm border-0 rounded-4 p-5">
+    <div class="d-flex align-items-center mb-4">
+      <i class="bi bi-pencil-square fs-3 text-primary me-2"></i>
+      <h3 class="mb-0 fw-bold">{{ title }}</h3>
     </div>
 
-    <!-- 게시글 유형 -->
-    <div class="mb-3">
-      <label for="post_type" class="form-label">게시글 유형</label>
-      <select class="form-select" name="post_type" id="post_type" required>
-        {% for value, label in post_types %}
-        <option value="{{ value }}"
-          {% if post and post.post_type == value %}
-            selected
-          {% elif not post and forloop.first %}
-            selected
-          {% endif %}>
-          {{ label }}
-        </option>
-        {% endfor %}
-      </select>
-    </div>
+    <form method="post" class="mt-4">
+      {% csrf_token %}
 
-    <!-- 카테고리 -->
-    <div class="mb-3">
-      <label for="category" class="form-label">카테고리</label>
-      <select class="form-select" name="category" id="category" required>
-        <option value="">-- 카테고리 선택 --</option>
-        {% for cat in categories %}
-        <option value="{{ cat.id }}"
-          {% if post and post.category.id == cat.id %}
-            selected
-          {% endif %}>
-          {{ cat.icon }} {{ cat.name }}
-        </option>
-        {% endfor %}
-      </select>
-    </div>
+      <!-- 제목 -->
+      <div class="mb-4">
+        <label for="title" class="form-label fw-semibold">제목</label>
+        <input type="text" class="form-control form-control-lg" name="title" id="title"
+               placeholder="제목을 입력하세요" required
+               value="{{ post.title|default_if_none:'' }}">
+      </div>
 
-    <!-- 내용 -->
-    <div class="mb-3">
-      <label for="content" class="form-label">내용</label>
-      <textarea class="form-control" name="content" id="content" rows="8"
-                placeholder="내용을 입력하세요" required>{{ post.content|default_if_none:'' }}</textarea>
-    </div>
+      <!-- 게시글 유형 -->
+      <div class="mb-4">
+        <label for="post_type" class="form-label fw-semibold">게시글 유형</label>
+        <select class="form-select form-select-lg" name="post_type" id="post_type" required>
+          {% for value, label in post_types %}
+          <option value="{{ value }}"
+            {% if post and post.post_type == value %}selected{% elif not post and forloop.first %}selected{% endif %}>
+            {{ label }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
 
-    <!-- 태그 -->
-    <div class="mb-3">
-      <label for="tags" class="form-label">태그</label>
-      <input type="text" class="form-control" name="tags" id="tags"
-             placeholder="쉼표로 구분 (예: 교차로,과실,우회전)"
-             value="{{ post.tags|default_if_none:'' }}">
-    </div>
+      <!-- 카테고리 -->
+      <div class="mb-4">
+        <label for="category" class="form-label fw-semibold">카테고리</label>
+        <select class="form-select form-select-lg" name="category" id="category" required>
+          <option value="">-- 카테고리 선택 --</option>
+          {% for cat in categories %}
+          <option value="{{ cat.id }}"
+            {% if post and post.category.id == cat.id %}selected{% endif %}>
+            {{ cat.icon }} {{ cat.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
 
-    <button type="submit" class="btn btn-primary">작성 완료</button>
-  </form>
+      <!-- 내용 -->
+      <div class="mb-4">
+        <label for="content" class="form-label fw-semibold">내용</label>
+        <textarea class="form-control form-control-lg" name="content" id="content" rows="8"
+                  placeholder="내용을 입력하세요" required>{{ post.content|default_if_none:'' }}</textarea>
+      </div>
+
+      <!-- 태그 -->
+      <div class="mb-4">
+        <label for="tags" class="form-label fw-semibold">태그</label>
+        <input type="text" class="form-control form-control-lg" name="tags" id="tags"
+               placeholder="예: 교차로,과실,우회전"
+               value="{{ post.tags|default_if_none:'' }}">
+        <div class="form-text mt-1">쉼표로 구분 (예: 교차로,과실,우회전)</div>
+      </div>
+
+      <!-- 버튼 -->
+      <div class="text-end">
+        <button type="submit" class="btn btn-primary btn-lg px-5 shadow-sm rounded-pill">
+          작성 완료
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}
