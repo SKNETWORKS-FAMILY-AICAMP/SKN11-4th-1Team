@@ -218,6 +218,7 @@ class Post(BaseModel):
     category = models.ForeignKey(
         Category, 
         on_delete=models.CASCADE,
+        related_name='posts',
         verbose_name='카테고리'
     )
     title = models.CharField(max_length=200, verbose_name='제목')
