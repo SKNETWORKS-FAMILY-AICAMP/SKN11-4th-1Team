@@ -1,164 +1,157 @@
 /* 전체 레이아웃 */
 .profile-update-container {
-    max-width: 600px;
-    margin: 80px auto;
-    padding: 30px;
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
-    font-family: 'Segoe UI', sans-serif;
+  max-width: 600px;
+  margin: 80px auto;
+  padding: 30px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', sans-serif;
 }
 
 .profile-title {
-    text-align: center;
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 25px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 25px;
 }
 
 /* 입력 필드 영역 */
 .profile-form .form-group {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .profile-form input {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #eee;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: border-color 0.3s;
-    font-family: inherit;
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+  font-family: inherit;
 }
 
 .profile-form input:focus {
-    border-color: #4285f4;
-    outline: none;
+  border-color: #4285f4;
+  outline: none;
 }
 
 /* 프로필 이미지 미리보기 */
 .profile-image-preview {
-    margin: 10px 0;
-    width: 120px;
-    border-radius: 8px;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  margin: 10px 0;
+  width: 120px;
+  border-radius: 8px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* 에러 메시지 */
 .form-error {
-    color: red;
-    font-size: 13px;
-    margin-top: 5px;
+  color: red;
+  font-size: 13px;
+  margin-top: 5px;
 }
 
 /* 알림 메시지 */
 .messages {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 20px;
+  list-style: none;
+  padding: 0;
+  margin-bottom: 20px;
 }
 
 .messages .alert {
-    padding: 12px;
-    background: #e9f6ff;
-    color: #0077cc;
-    border-radius: 6px;
+  padding: 12px;
+  background: #e9f6ff;
+  color: #0077cc;
+  border-radius: 6px;
 }
 
-/* 버튼 그룹 영역 */
+/* 버튼 그룹 영역 - 간격 줄이기 */
 .form-actions {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 30px;
-    flex-wrap: wrap;
-    align-items: stretch;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px; /* ✅ 간격 줄이기 */
+  margin-top: 30px;
 }
 
 /* 공통 버튼 스타일 */
 .btn-profile-save,
 .btn-profile-cancel,
-.btn-profile-reset {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 44px;
-    min-width: 100px;
-    padding: 0 24px;
-    font-size: 14px;
-    font-weight: bold;
-    font-family: 'Segoe UI', sans-serif;
-    border-radius: 8px;
-    text-decoration: none;
-    cursor: pointer;
-    line-height: 1;
-    box-sizing: border-box;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-    border: none;
-}
-
-/* 저장 버튼 */
-.btn-profile-save {
-    background-color: #4285f4;
-    color: white;
-}
-.btn-profile-save:hover {
-    background-color: #1976d2;
-}
-
-/* 취소 버튼 */
-.btn-profile-cancel {
-    background-color: #f5f5f5;
-    color: #666;
-}
-.btn-profile-cancel:hover {
-    background-color: #e0e0e0;
-    color: #333;
-}
-
-/* 비밀번호 재설정 버튼 */
-.btn-profile-reset {
-    background-color: #ffc107;
-    color: black;
-}
-.btn-profile-reset:hover {
-    background-color: #e0a800;
-    color: black;
-}
-
-/* 긴 링크 줄바꿈 방지 */
-.profile-form a {
-    word-break: break-word;
-    overflow-wrap: break-word;
-    max-width: 100%;
-    font-size: 13px;
-    color: #4285f4;
-    display: inline-block;
-    margin-top: 6px;
-}
-
-button.btn-profile-save {
-  all: unset; /* 기본 버튼 스타일 초기화 */
+.btn-profile-reset,
+a.btn-profile-save,
+a.btn-profile-cancel,
+a.btn-profile-reset,
+button.btn-profile-save,
+button.btn-profile-cancel,
+button.btn-profile-reset {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 44px;
-  min-width: 100px;
-  padding: 0 24px;
+  min-width: 110px;
+  padding: 10px 24px;
   font-size: 14px;
   font-weight: bold;
   font-family: 'Segoe UI', sans-serif;
   border-radius: 8px;
-  background-color: #4285f4;
-  color: white !important;
-  text-decoration: none;
   cursor: pointer;
-  line-height: 1;
+  text-decoration: none;
+  line-height: 1.4;
+  border: none;
+  transition: all 0.3s ease;
+  white-space: nowrap;
   box-sizing: border-box;
-  transition: background 0.3s ease;
+  height: auto;
 }
 
-button.btn-profile-save:hover {
+/* 저장 버튼 */
+.btn-profile-save {
+  background-color: #4285f4;
+  color: white  /* ✅ 흰 글자 */
+}
+.btn-profile-save:hover {
   background-color: #1976d2;
+}
+
+/* 취소 버튼 */
+.btn-profile-cancel {
+  background-color: #f0f0f0;
+  color: #333 !important;  /* ✅ 회색 글자 */
+  border: 1px solid #bbb;
+}
+.btn-profile-cancel:hover {
+  background-color: #e0e0e0;
+}
+
+/* 비밀번호 재설정 버튼 */
+.btn-profile-reset {
+  background-color: #ffc107;
+  color: #212529 !important;  /* ✅ 검정 글자 */
+}
+.btn-profile-reset:hover {
+  background-color: #e0a800;
+}
+
+/* 긴 링크 줄바꿈 방지 */
+.profile-form a {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  font-size: 13px;
+  color: #4285f4;
+  display: inline-block;
+  margin-top: 6px;
+}
+
+/* 반응형 대응 */
+@media (max-width: 576px) {
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-actions a,
+  .form-actions button {
+    width: 100%;
+  }
 }
