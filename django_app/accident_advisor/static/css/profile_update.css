@@ -119,12 +119,19 @@
 }
 
 /* 저장 버튼 */
+
+
 .btn-profile-save {
-  background-color: #4285f4;
-  color: white  /* ✅ 흰 글자 */
+  background: linear-gradient(135deg, #ff6b35, #ff8760);  /* 변수 제거하고 실제 색상 지정 */
+  color: white;
+  border: none;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.25);
 }
+
 .btn-profile-save:hover {
-  background-color: #1976d2;
+  background: #e55a2e;  /* hover용 색상도 직접 지정 */
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.35);
 }
 
 /* 취소 버튼 */
@@ -148,16 +155,49 @@
 }
 
 /* 비밀번호 재설정 버튼 */
+
 .btn-profile-reset {
-  background-color: #ffc107;
-  color: #212529 !important;  /* ✅ 검정 글자 */
+  background: linear-gradient(135deg, #10b981, #34d399) !important; 
+  color: white;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25) !important;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
 }
 .btn-profile-reset:hover {
-  background-color: #e0a800;
+  background: linear-gradient(135deg, #0f766e, #10b981) !important; 
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35) !important;
 }
 
-/* 긴 링크 줄바꿈 방지 */
-.profile-form a {
+/* 긴 링크 줄바꿈 방지
+.delete-image-checkbox {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  font-size: 13px;
+  color: #4285f4;
+  display: inline-block;
+  margin-top: 6px;
+} */
+
+/* 반응형 대응 */
+@media (max-width: 576px) {
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-actions a,
+  .form-actions button {
+    width: 100%;
+  }
+}
+
+.delete-image-checkbox {
   word-break: break-word;
   overflow-wrap: break-word;
   max-width: 100%;

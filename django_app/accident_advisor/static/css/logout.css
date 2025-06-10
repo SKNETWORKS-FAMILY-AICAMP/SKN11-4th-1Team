@@ -23,22 +23,26 @@
 }
 
 /* 로그인 버튼 (파란색) */
+
 .btn-logout-login {
-    background-color: #4285f4;
-    color: white ;
-    padding: 10px 24px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 500;
-    text-decoration: none ;
-    transition: all 0.3s ease;
-    display: inline-block;
-    text-align: center;
-    cursor: pointer;
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #ff6b35, #ff8760);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.25);
+  letter-spacing: -0.01em;
+  display: inline-block;
+  text-decoration: none ;
+  text-align: center;
 }
+
 .btn-logout-login:hover {
-    background-color: #1976d2;
-    color: #f1f1f1 ;
+  background: linear-gradient(135deg, #e55a2e, #d04f26);
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.35);
 }
 
 /* 메인으로 버튼 (회색 테두리) */
