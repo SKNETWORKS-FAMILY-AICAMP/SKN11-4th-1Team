@@ -15,12 +15,13 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <!-- 타이틀, 작성자, 작성일시, 조회수 -->
-                    <span class="badge me-2" style="background-color: var(--orange-400); color: white;">{{ post.category.name }}</span>
+                    <span class="badge bg-primary me-2" style="background-color: var(--orange-400); color: white;">{{ post.category.name }}</span>
                     <h2 class="card-title mb-3">{{ post.title }}</h2>
                     <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">                            
+                        <div class="d-flex align-items-center">
                             <small class="text-muted">
-                                <i class="fas fa-user me-1"></i> 🧑‍💻 {{ post.author.display_name }}
+                                <i class="fas fa-user me-1"></i>
+                                🧑‍💻 {{ post.author.nickname|default:post.author.username }}
                                 <i class="fas fa-calendar ms-3 me-1"></i>{{ post.created_at|date:"Y-m-d H:i" }}
                                 <i class="fas fa-eye ms-3 me-1"></i>👁️‍🗨️ {{ post.view_count }}
                             </small>
@@ -42,7 +43,7 @@
                     <div class="tags mb-3">
                         <i class="fas fa-tags me-2"></i>
                         {% for tag in post.tags|split:"," %}
-                        <span class="badge text-dark me-1" style="background-color: var(--orange-100); color: var(--orange-700); border: 1px solid var(--orange-200);">#{{ tag|trim }}</span>
+                        <span class="badge bg-light text-dark me-1" style="background-color: var(--orange-100); color: var(--orange-700); border: 1px solid var(--orange-200);">#{{ tag|trim }}</span>
                         {% endfor %}
                     </div>
                     {% endif %}
@@ -51,8 +52,10 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="action-buttons">
                             {% if user.is_authenticated %}
-                            <button class="btn btn-outline-danger btn-sm like-btn" data-post-id="{{ post.id }}"
-                                data-liked="{{ user_liked|yesno:'true,false' }}">
+                            <button class="btn btn-sm like-btn {% if user_liked %}btn-danger{% else %}btn-outline-danger{% endif %}"
+                                    data-post-id="{{ post.id }}"
+                                    data-liked="{{ user_liked|yesno:'true,false' }}"
+                                    data-toggle-url="{% url 'community:toggle_like' post.id %}">
                                 <i class="fas fa-heart{% if not user_liked %}-o{% endif %} me-1"></i>
                                 <span class="like-count">❤️{{ post.like_count }}</span>
                             </button>
@@ -61,15 +64,14 @@
                                 <i class="fas fa-heart me-1"></i>❤️{{ post.like_count }}
                             </span>
                             {% endif %}
-
-                            <button class="btn btn-sm ms-1" style="background-color: var(--orange-400); color: white; border: none;" onclick="sharePost()">
+                            <button class="btn btn-primary btn-sm ms-1" style="background-color: var(--orange-400); color: white; border: none;" onclick="sharePost()">
                                 <i class="fa fa-share me-1"></i>공유하기
                             </button>
                         </div>
 
                         {% if user == post.author %}
                         <div class="author-actions">
-                            <a href="{% url 'community:edit' post.id %}" class="btn btn-sm" style="color: var(--orange-600); border: 1px solid var(--orange-300); background: transparent;">
+                            <a href="{% url 'community:edit' post.id %}" class="btn btn-outline-primary btn-sm" style="color: var(--orange-600); border: 1px solid var(--orange-300); background: transparent;">
                                 <i class="fas fa-edit me-1"></i>수정
                             </a>
                             <a href="{% url 'community:delete' post.id %}" class="btn btn-outline-danger btn-sm ms-1">
@@ -82,6 +84,8 @@
             </div>
         </div>
     </div>
+
+
 
     <!-- 댓글 Section -->
     <div class="row">
@@ -96,13 +100,14 @@
                 <div class="card-body">
                     <!-- 댓글 작성 폼 - 로그인한 상태에서만 가능하도록 -->
                     {% if user.is_authenticated %}
-                    <form method="post" class="mb-4">
+                    <form id="commentForm" method="post" class="mb-4" onsubmit="submitComment(event)">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="{{ comment_form.content.id_for_label }}" class="form-label">댓글 작성</label>
                             {{ comment_form.content }}
                         </div>
-                        <button type="submit" class="btn" style="background-color: var(--orange-400); color: white; border: none;">
+                        <button type="submit" class="btn btn-primary" id="commentSubmitBtn" style="background-color: var(--orange-400); color: white; border: none;"
+                            data-create-url="{% url 'community:comment_create' post.id %}">
                             <i class="fas fa-paper-plane me-1"></i>댓글 등록
                         </button>
                     </form>
@@ -118,21 +123,38 @@
                     {% if comments %}
                     <div class="comments-list">
                         {% for comment in comments %}
-                        <div class="comment-item mb-3 p-3 bg-light rounded">
+                        <div class="comment-item mb-3 p-3 bg-light rounded" id="comment-{{ comment.id }}">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="comment-header mb-2">
-                                    <strong>{{ comment.author.display_name }}</strong>
+                                    <strong>{{ comment.author.nickname|default:comment.author.username }}</strong>
                                     <small class="text-muted ms-2">
                                         <i class="fas fa-clock me-1"></i>{{ comment.created_at|date:"Y-m-d H:i" }}
                                     </small>
                                 </div>
-                                {% if comment.like_count > 0 %}
-                                <span class="badge bg-danger">
-                                    <i class="fas fa-heart me-1"></i>{{ comment.like_count }}
-                                </span>
-                                {% endif %}
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if comment.like_count >= 0 %}
+                                    {% if user.is_authenticated %}
+                                    <button class="btn btn-sm comment-like-btn {% if comment.user_liked %}btn-danger{% else %}btn-outline-danger{% endif %}"
+                                            data-comment-id="{{ comment.id }}"
+                                            data-liked="{{ comment.user_liked|yesno:'true,false' }}"
+                                            data-toggle-url="{% url 'community:comment_like' comment.id %}">
+                                        <i class="fas fa-heart{% if not comment.user_liked %}-o{% endif %} me-1"></i>
+                                        <span class="like-count">❤️{{ comment.like_count }}</span>
+                                    </button>
+                                    {% else %}
+                                    <span class="text-muted">
+                                        <i class="fas fa-heart me-1"></i>❤️{{ comment.like_count }}
+                                    </span>
+                                    {% endif %}
+                                    {% endif %}
+
+                                    {% if user == comment.author %}
+                                    <a href="{% url 'community:comment_delete' comment.id %}"
+                                        class="btn btn-outline-danger btn-sm">삭제</a>
+                                    {% endif %}
+                                </div>
                             </div>
-                            <div class="comment-content">
+                            <div class="comment-content" id="comment-content-{{ comment.id }}">
                                 {{ comment.content|linebreaksbr }}
                             </div>
                         </div>
