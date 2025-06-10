@@ -23,5 +23,11 @@ urlpatterns = [
     
     # 비밀번호 변경 (선택사항)
     path('password-reset/', views.password_reset_view, name='password_reset'),
+
+    # 탈퇴 비밀번호 입력 페이지
+    path('confirm_delete/', views.confirm_delete_view, name='confirm_delete'),
+
+    # 실제 회원 탈퇴 처리 (POST만 허용)
+    path('delete/', views.delete_account_view, name='delete_account'),
     
 ]

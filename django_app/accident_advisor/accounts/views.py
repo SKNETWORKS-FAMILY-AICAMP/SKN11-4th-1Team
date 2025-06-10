@@ -15,6 +15,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import authenticate
 
 from .forms import CustomUserCreationForm, LoginForm, ProfileUpdateForm
 from core.models import User
@@ -106,6 +107,36 @@ def logout_view(request):
         messages.info(request, f'{username}님, 로그아웃되었습니다.')
     
     return render(request, 'accounts/logout.html')
+
+
+
+@login_required
+def confirm_delete_view(request):
+    return render(request, 'accounts/delete_account.html', {'title': '회원 탈퇴'})
+
+@login_required
+def delete_account_view(request):
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        user = request.user
+
+        if user.check_password(password):
+            logout(request)
+            user.delete()
+            messages.success(request, '회원탈퇴가 완료되었습니다.')
+            return redirect('main:index')
+        else:
+            # error는 messages가 아닌 context로 직접 전달
+            return render(request, 'accounts/delete_account.html', {
+                'title': '회원 탈퇴',
+                'error_message': '비밀번호가 올바르지 않습니다.'
+            })
+    else:
+        return render(request, 'accounts/delete_account.html', {
+            'title': '회원 탈퇴'
+        })
+
+
 
 
 

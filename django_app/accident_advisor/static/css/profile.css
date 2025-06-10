@@ -83,3 +83,13 @@
     color: #0077cc;
     border-radius: 6px;
 }
+
+.withdraw-link {
+  font-size: 13px;
+  color: #1a73e8;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.withdraw-link:hover {
+  color: #0b5ed7;
+}

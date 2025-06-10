@@ -5,15 +5,7 @@
   <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 
   <div class="profile-container">
-    <h2 class="profile-title">{{ title }}</h2>
-
-    {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          <li {% if message.tags %} class="alert {{ message.tags }}" {% endif %}>{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+    <h2 class="profile-title">회원 탈퇴</h2>
 
     <div class="profile-info">
       <p><strong>닉네임:</strong> {{ user.nickname }}</p>
@@ -35,9 +27,18 @@
       <a href="{% url 'accounts:logout' %}" class="btn-profile-logout">로그아웃</a>
     </div>
 
-    <!-- 회원탈퇴 링크 -->
-    <div style="text-align: center; margin-top: 12px;">
-      <a href="{% url 'accounts:confirm_delete' %}" class="withdraw-link">회원탈퇴</a>
+    <!-- 탈퇴 확인 폼 -->
+    <div style="text-align: center; margin-top: 24px;">
+      <form method="post" action="{% url 'accounts:delete_account' %}">
+        {% csrf_token %}
+        <input type="password" name="password" placeholder="비밀번호 입력" required
+               style="padding: 6px; border-radius: 6px; border: 1px solid #ccc;">
+        <button type="submit" class="btn-profile-edit" style="margin-left: 8px;">탈퇴</button>
+
+        {% if error_message %}
+          <p style="color: red; margin-top: 8px;">{{ error_message }}</p>
+        {% endif %}
+      </form>
     </div>
   </div>
 {% endblock %}
