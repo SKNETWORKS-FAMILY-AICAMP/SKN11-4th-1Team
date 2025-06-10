@@ -85,9 +85,9 @@
 # 4. 요구사항 명세서
 
 [SKN 11기 1TEAM 요구사항 명세서 내용 주소](https://www.notion.so/ohgiraffers/20a649136c1181d4b4d6ce17a188bd6f)
+![image.png](./img/요구사항%20명세서%20예시.png)
 
-
-<br/><br/>
+<br/>
 
 # 5. 기술 스택 & 사용한 모델 (임베딩 모델, LLM)
 
