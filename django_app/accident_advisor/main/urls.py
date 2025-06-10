@@ -15,4 +15,7 @@ urlpatterns = [
     path('api/send-message/', views.send_message, name='send_message'),
     path('api/chat-history/<str:session_id>/', views.get_chat_history_with_insights, name='chat_history'),
     path('api/new-chat/', views.new_chat, name='new_chat'),
+    
+    # 채팅 세션 목록 API (누락된 URL 추가)
+    path('api/chat-sessions/', views.get_chat_sessions, name='chat_sessions'),
 ]
