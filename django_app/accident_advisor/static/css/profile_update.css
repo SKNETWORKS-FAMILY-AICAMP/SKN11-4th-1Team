@@ -74,20 +74,34 @@
   margin-top: 30px;
 }
 
-/* 공통 버튼 스타일 */
-.btn-profile-save,
+/* 취소 + 비밀번호 변경 버튼 스타일 */
 .btn-profile-cancel,
-.btn-profile-reset,
-a.btn-profile-save,
-a.btn-profile-cancel,
-a.btn-profile-reset,
-button.btn-profile-save,
-button.btn-profile-cancel,
-button.btn-profile-reset {
+.btn-profile-reset {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 44px;
+  min-width: 110px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: 'Segoe UI', sans-serif;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.4;
+  border: none;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.btn-profile-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.4;     /* or 1 */
+  height: 48px;
   min-width: 110px;
   padding: 10px 24px;
   font-size: 14px;
@@ -115,12 +129,22 @@ button.btn-profile-reset {
 
 /* 취소 버튼 */
 .btn-profile-cancel {
-  background-color: #f0f0f0;
-  color: #333 !important;  /* ✅ 회색 글자 */
-  border: 1px solid #bbb;
+    background-color: white;
+    color: #666 !important;
+    padding: 10px 24px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none ;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
 }
 .btn-profile-cancel:hover {
-  background-color: #e0e0e0;
+    color: #333 !important;
+    border-color: #999;
+    background-color: #f9f9f9;
 }
 
 /* 비밀번호 재설정 버튼 */
