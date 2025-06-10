@@ -1,5 +1,37 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html
+  lang="ko"
+  style="
+    --primary-color: #ff6b35;
+    --primary-hover: #e55a2e;
+    --primary-light: #ff8760;
+    --accent-color: #ff9500;
+    --secondary-color: #6b7280;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --light-color: #fefbf7;
+    --dark-color: #1f2937;
+    --bg-primary: #fefbf7;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f9f5f1;
+    --bg-quaternary: #f3efe8;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    --border-color: #e5e1db;
+    --border-light: #f0ebe4;
+    --shadow-color: rgba(31, 41, 55, 0.08);
+    --shadow-hover: rgba(31, 41, 55, 0.15);
+    --chat-bg: #ffffff;
+    --sidebar-bg: #f9f5f1;
+    --message-user-bg: linear-gradient(135deg, #ff6b35, #ff8760);
+    --message-bot-bg: #f9f5f1;
+    --hover-bg: rgba(255, 107, 53, 0.08);
+    --input-bg: #ffffff;
+    --input-focus: rgba(255, 107, 53, 0.1);
+  "
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,6 +48,342 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css"
     />
 
+    <style>
+      /* 버튼 포커스 상태 커스터마이징 */
+      .btn:focus,
+      .btn.focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25) !important;
+      }
+
+      .btn-outline-primary:focus,
+      .btn-outline-primary.focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25) !important;
+        border-color: var(--primary-color) !important;
+      }
+
+      .btn-primary:focus,
+      .btn-primary.focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25) !important;
+        background-color: var(--primary-hover) !important;
+        border-color: var(--primary-hover) !important;
+      }
+
+      /* 링크 버튼의 포커스 상태 */
+      a.btn:focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25) !important;
+      }
+
+      /* 인라인 스타일이 적용된 버튼들도 포함 */
+      .btn[style*="border-color"]:focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25) !important;
+      }
+
+      /* 네비게이션 바와 드롭다운 z-index 설정 */
+      .navbar {
+        z-index: 1050 !important;
+        position: relative !important;
+      }
+
+      .dropdown-menu {
+        z-index: 1060 !important;
+        position: absolute !important;
+      }
+
+      /* 드롭다운이 열렸을 때 추가 스타일 */
+      .dropdown-menu.show {
+        z-index: 1060 !important;
+        position: absolute !important;
+        transform: none !important;
+      }
+
+      /* 고정 사이드바 스타일 */
+      .fixed-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 280px;
+        height: 100vh;
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--border-color);
+        z-index: 1040;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        transform: translateX(0);
+        transition: transform 0.3s ease;
+      }
+
+      /* 모바일에서만 숨김 */
+      @media (max-width: 991.98px) {
+        .fixed-sidebar {
+          transform: translateX(-100%);
+        }
+
+        .fixed-sidebar.show {
+          transform: translateX(0);
+        }
+      }
+
+      .sidebar-brand {
+        padding: 20px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--bg-secondary);
+      }
+
+      .sidebar-brand img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .sidebar-brand-text {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      .sidebar-nav {
+        padding: 20px 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .sidebar-nav-item {
+        display: block;
+        padding: 12px 20px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border-left: 3px solid transparent;
+      }
+
+      .sidebar-nav-item.new-chat {
+        background: transparent !important;
+        border-left: 3px solid transparent !important;
+      }
+
+      .sidebar-nav-item.new-chat:hover {
+        background: var(--hover-bg) !important;
+        color: var(--primary-color) !important;
+        border-left-color: transparent !important;
+      }
+
+      .sidebar-nav-item.new-chat.active {
+        background: transparent !important;
+        color: var(--primary-color) !important;
+        border-left-color: transparent !important;
+      }
+
+      .sidebar-nav-item:hover {
+        background: var(--hover-bg);
+        color: var(--primary-color);
+        border-left-color: var(--primary-color);
+        text-decoration: none;
+      }
+
+      .sidebar-nav-item.active {
+        background: var(--hover-bg);
+        color: var(--primary-color);
+        border-left-color: var(--primary-color);
+      }
+
+      .sidebar-nav-item i {
+        width: 20px;
+        margin-right: 12px;
+      }
+
+      .sidebar-close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+      }
+
+      .sidebar-close-btn:hover {
+        background: var(--hover-bg);
+        color: var(--text-primary);
+      }
+
+      .sidebar-toggle-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 18px;
+        padding: 8px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        margin-right: 10px;
+      }
+
+      .sidebar-toggle-btn:hover {
+        background: var(--hover-bg);
+        color: var(--primary-color);
+      }
+
+      .sidebar-user {
+        margin-top: auto;
+        padding: 20px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      .sidebar-user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        margin-bottom: 12px;
+      }
+
+      .sidebar-user-avatar {
+        width: 40px;
+        height: 40px;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+      }
+
+      .sidebar-user-details h6 {
+        margin: 0;
+        font-size: 14px;
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      .sidebar-user-details small {
+        color: var(--text-muted);
+        font-size: 12px;
+      }
+
+      .sidebar-user-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .sidebar-user-actions .btn {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 12px;
+        border-radius: 8px;
+      }
+
+      .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1030;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .sidebar-overlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* 반응형 - 모바일에서는 오버레이 표시 */
+      @media (max-width: 991.98px) {
+        .sidebar-overlay.show {
+          display: block;
+        }
+      }
+
+      @media (min-width: 992px) {
+        .sidebar-overlay {
+          display: none;
+        }
+      }
+
+      /* 메인 콘텐츠 영역 조정 */
+      .main-content {
+        margin-left: 280px;
+        min-height: 100vh;
+        background-color: var(--bg-primary);
+        padding: 20px;
+      }
+
+      /* 모바일에서는 사이드바 width만큼 margin 제거 */
+      @media (max-width: 991.98px) {
+        .main-content {
+          margin-left: 0;
+        }
+
+        .sidebar-toggle-btn {
+          display: inline-block;
+        }
+      }
+
+      /* 데스크톱에서는 토글 버튼 숨김 */
+      @media (min-width: 992px) {
+        .sidebar-toggle-btn {
+          display: none;
+        }
+
+        .sidebar-close-btn {
+          display: none;
+        }
+      }
+
+      /* 채팅 세션 아이템 스타일 */
+      .session-item {
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border-light);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-left: 3px solid transparent;
+      }
+
+      .session-item:hover {
+        background: var(--hover-bg);
+        border-left-color: var(--primary-color);
+      }
+
+      .session-item.active {
+        background: var(--hover-bg);
+        border-left-color: var(--primary-color);
+      }
+
+      .session-title {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+        line-height: 1.3;
+      }
+
+      .session-info {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 4px;
+        line-height: 1.3;
+      }
+
+      .session-time {
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+    </style>
+
     {% load static %}
     <!-- 커스텀 CSS -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}" />
@@ -23,113 +391,206 @@
     {% block extra_css %}{% endblock %}
   </head>
   <body>
-    <!-- 네비게이션 바 -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container">
-        <a class="navbar-brand" href="{% url 'main:index' %}">
-          <i class="bi bi-shield-check"></i> 노느
-        </a>
+    <!-- 사이드바 오버레이 -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span class="navbar-toggler-icon"></span>
+    <!-- 고정 사이드바 -->
+    <div class="fixed-sidebar" id="fixedSidebar">
+      <!-- 닫기 버튼 (모바일용) -->
+      <button class="sidebar-close-btn" id="sidebarCloseBtn">
+        <i class="bi bi-x"></i>
+      </button>
+
+      <!-- 사이드바 토글 버튼 (모바일용) -->
+      <div class="d-lg-none p-3">
+        <button class="sidebar-toggle-btn" id="mobileSidebarToggleBtn">
+          <i class="bi bi-list"></i>
         </button>
+      </div>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'main:index' %}">
-                <i class="bi bi-chat-dots"></i> 채팅 상담
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'community:list' %}">
-                <i class="bi bi-people"></i> 커뮤니티
-              </a>
-            </li>
-          </ul>
+      <!-- 로고 및 브랜드 -->
+      <div class="sidebar-brand">
+        <img src="{% static 'img/chatbot.png' %}" alt="노느 로고" />
+        <div class="sidebar-brand-text">노느</div>
+      </div>
 
-          <ul class="navbar-nav">
-            {% if user.is_authenticated %}
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="navbarDropdown"
-                role="button"
-                data-bs-toggle="dropdown"
-              >
-                <i class="bi bi-person-circle"></i> {{
-                user.nickname|default:user.username }}
-              </a>
-              <ul class="dropdown-menu">
-                <li>
-                  <a class="dropdown-item" href="{% url 'accounts:profile' %}"
-                    >내 프로필</a
-                  >
-                </li>
-                <li><hr class="dropdown-divider" /></li>
-                <li>
-                  <a class="dropdown-item" href="{% url 'accounts:logout' %}"
-                    >로그아웃</a
-                  >
-                </li>
-              </ul>
-            </li>
-            {% else %}
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'accounts:login' %}">
-                <i class="bi bi-box-arrow-in-right"></i> 로그인
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'accounts:signup' %}">
-                <i class="bi bi-person-plus"></i> 회원가입
-              </a>
-            </li>
-            {% endif %}
-          </ul>
+      <!-- 메인 네비게이션 -->
+      <div class="sidebar-nav">
+        <a
+          href="{% url 'main:index' %}"
+          class="sidebar-nav-item new-chat"
+          id="sidebar-nav-chat"
+        >
+          새 채팅
+        </a>
+        <a
+          href="{% url 'main:index' %}"
+          class="sidebar-nav-item"
+          id="sidebar-nav-main"
+        >
+          <i class="bi bi-house"></i> 채팅 상담
+        </a>
+        <a
+          href="{% url 'community:list' %}"
+          class="sidebar-nav-item"
+          id="sidebar-nav-community"
+        >
+          <i class="bi bi-people"></i> 커뮤니티
+        </a>
+      </div>
+
+      <!-- 채팅 기록 (로그인한 사용자만) -->
+      {% if user.is_authenticated %}
+      <div class="sidebar-section">
+        <div
+          style="
+            padding: 16px 20px 8px;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          "
+        >
+          최근 상담
+        </div>
+        <div class="chat-history-sidebar">
+          <!-- 동적으로 로드될 채팅 기록 -->
+          <div
+            style="
+              padding: 20px;
+              text-align: center;
+              color: var(--text-muted);
+              font-size: 13px;
+            "
+          >
+            상담 기록을 불러오는 중...
+          </div>
         </div>
       </div>
-    </nav>
+      {% endif %}
 
-    <!-- 메시지 알림 -->
-    {% if messages %}
-    <div class="container mt-3">
-      {% for message in messages %}
-      <div
-        class="alert alert-{{ message.tags }} alert-dismissible fade show"
-        role="alert"
-      >
-        {{ message }}
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="alert"
-        ></button>
+      <!-- 사용자 정보 -->
+      <div class="sidebar-user">
+        {% if user.is_authenticated %}
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-avatar">
+            {{ user.display_name|first|upper }}
+          </div>
+          <div class="sidebar-user-details">
+            <h6>{{ user.display_name }}</h6>
+            <small>로그인 상태</small>
+          </div>
+        </div>
+        <div class="sidebar-user-actions">
+          <a
+            href="{% url 'accounts:profile' %}"
+            class="btn btn-outline-primary"
+          >
+            <i class="bi bi-person"></i> 프로필
+          </a>
+          <a
+            href="{% url 'accounts:logout' %}"
+            class="btn btn-outline-secondary"
+          >
+            <i class="bi bi-box-arrow-right"></i> 로그아웃
+          </a>
+        </div>
+        {% else %}
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-avatar">
+            <i class="bi bi-person"></i>
+          </div>
+          <div class="sidebar-user-details">
+            <h6>게스트</h6>
+            <small>비로그인 상태</small>
+          </div>
+        </div>
+        <div class="sidebar-user-actions">
+          <a href="{% url 'accounts:login' %}" class="btn btn-primary">
+            <i class="bi bi-box-arrow-in-right"></i> 로그인
+          </a>
+          <a href="{% url 'accounts:signup' %}" class="btn btn-outline-primary">
+            <i class="bi bi-person-plus"></i> 회원가입
+          </a>
+        </div>
+        {% endif %}
       </div>
-      {% endfor %}
     </div>
-    {% endif %}
 
     <!-- 메인 콘텐츠 -->
-    <main>{% block content %} {% endblock %}</main>
-
-    <!-- 푸터 -->
-    <footer class="bg-light py-4 mt-5">
-      <div class="container text-center">
-        <p class="text-muted mb-0">
-          &copy; 2025 노느 - 교통사고 과실비율 상담 챗봇.
-          <small
-            >법률 상담은 참고용이며, 정확한 판단은 전문가와 상의하세요.</small
-          >
-        </p>
+    <div class="main-content">
+      <!-- 모바일 네비게이션 헤더 -->
+      <div class="d-lg-none mb-3">
+        <div
+          class="d-flex align-items-center justify-content-between p-3 bg-white rounded shadow-sm"
+        >
+          <button class="sidebar-toggle-btn" id="mobileToggleBtn">
+            <i class="bi bi-list"></i>
+          </button>
+          <div class="d-flex align-items-center">
+            <img
+              src="{% static 'img/chatbot.png' %}"
+              alt="노느 로고"
+              style="width: 32px; height: 32px; margin-right: 8px"
+            />
+            <span style="color: var(--primary-color); font-weight: 700"
+              >노느</span
+            >
+          </div>
+          <div></div>
+        </div>
       </div>
-    </footer>
+
+      <!-- 메시지 알림 -->
+      {% if messages %}
+      <div class="mb-3">
+        {% for message in messages %}
+        <div
+          class="alert alert-{{ message.tags }} alert-dismissible fade show"
+          role="alert"
+          style="
+            border: none;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+          "
+        >
+          {{ message }}
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            style="filter: opacity(0.6)"
+          ></button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- 페이지 콘텐츠 -->
+      {% block content %} {% endblock %}
+
+      <!-- 푸터 -->
+      <footer
+        class="py-4 mt-5"
+        style="
+          background-color: var(--bg-secondary);
+          border-top: 1px solid var(--border-color);
+          border-radius: 12px;
+        "
+      >
+        <div class="text-center">
+          <p class="mb-0" style="color: var(--text-muted)">
+            &copy; 2025 노느 - 교통사고 과실비율 상담 챗봇.
+            <small style="color: var(--text-muted)"
+              >법률 상담은 참고용이며, 정확한 판단은 전문가와 상의하세요.</small
+            >
+          </p>
+        </div>
+      </footer>
+    </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -139,6 +600,111 @@
     {% load static %}
     <!-- 커스텀 JS -->
     <script src="{% static 'js/main.js' %}"></script>
+
+    <!-- 사이드바 스크립트 -->
+    <script>
+      $(document).ready(function() {
+          // 사이드바 토글 (모바일)
+          $('#mobileToggleBtn, #mobileSidebarToggleBtn').click(function() {
+              $('#fixedSidebar').addClass('show');
+              $('#sidebarOverlay').addClass('show');
+          });
+
+          // 사이드바 닫기
+          function closeSidebar() {
+              $('#fixedSidebar').removeClass('show');
+              $('#sidebarOverlay').removeClass('show');
+          }
+
+          $('#sidebarCloseBtn').click(closeSidebar);
+          $('#sidebarOverlay').click(closeSidebar);
+
+          // ESC 키로 사이드바 닫기
+          $(document).keydown(function(e) {
+              if (e.key === 'Escape') {
+                  closeSidebar();
+              }
+          });
+
+          // 현재 페이지에 따라 사이드바 네비게이션 활성화
+          const currentPath = window.location.pathname;
+          $('.sidebar-nav-item').removeClass('active');
+
+          if (currentPath === '/' || currentPath.includes('/main/')) {
+              $('#sidebar-nav-main, #sidebar-nav-chat').addClass('active');
+          } else if (currentPath.includes('/community/')) {
+              $('#sidebar-nav-community').addClass('active');
+          }
+
+          // 사이드바 링크 클릭 시 사이드바 닫기 (모바일)
+          $('.sidebar-nav-item').click(function() {
+              if (window.innerWidth <= 991.98) {
+                  setTimeout(closeSidebar, 100);
+              }
+          });
+
+          // 채팅 기록 로드 (로그인한 사용자만)
+          {% if user.is_authenticated %}
+          loadChatHistory();
+          {% endif %}
+      });
+
+      // 채팅 기록 로드 함수
+      function loadChatHistory() {
+          // AJAX로 최근 채팅 세션들 가져오기
+          $.ajax({
+              url: '{% url "main:chat_sessions" %}',
+              method: 'GET',
+              success: function(response) {
+                  if (response.success && response.sessions.length > 0) {
+                      let sessionsHtml = '';
+                      response.sessions.forEach(function(session) {
+                          sessionsHtml += `
+                              <div class="session-item" data-session-id="${session.session_id}" onclick="loadChatSession('${session.session_id}')">
+                                  <div class="session-title">${session.title}</div>
+                                  <div class="session-info" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                                      ${session.last_message}
+                                  </div>
+                                  <div class="session-time" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+                                      ${session.updated_at}
+                                  </div>
+                              </div>
+                          `;
+                      });
+                      $('.chat-history-sidebar').html(sessionsHtml);
+                  } else {
+                      $('.chat-history-sidebar').html('<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">아직 상담 기록이 없습니다.</div>');
+                  }
+              },
+              error: function() {
+                  $('.chat-history-sidebar').html('<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">채팅 기록을 불러올 수 없습니다.</div>');
+              }
+          });
+      }
+
+      // 채팅 세션 로드 함수
+      function loadChatSession(sessionId) {
+          // 현재 페이지가 메인 채팅 페이지인지 확인
+          if (window.location.pathname === '/' || window.location.pathname.includes('/main/')) {
+              // 메인 페이지에서 세션 로드
+              if (typeof loadSessionMessages === 'function') {
+                  loadSessionMessages(sessionId);
+              }
+
+              // 활성 세션 표시
+              $('.session-item').removeClass('active');
+              $(`.session-item[data-session-id="${sessionId}"]`).addClass('active');
+
+              // 모바일에서 사이드바 닫기
+              if (window.innerWidth <= 991.98) {
+                  setTimeout(closeSidebar, 100);
+              }
+          } else {
+              // 다른 페이지에서는 메인 페이지로 이동하면서 세션 ID 전달
+              window.location.href = `/?session=${sessionId}`;
+          }
+      }
+    </script>
 
     {% block extra_js %}{% endblock %}
   </body>

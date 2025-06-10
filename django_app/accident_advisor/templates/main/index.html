@@ -1,40 +1,38 @@
-{% extends 'base.html' %} {% load static %} {% block title %}메인 채팅 -
-교통사고 상담{% endblock %} {% block extra_css %}
+{% extends 'base.html' %} {% load static %} {% block title %}메인 채팅 - 노느
+{%endblock %} {% block extra_css %}
 <style>
   .chat-container {
-    height: 80vh;
-    display: flex;
-  }
-
-  .chat-sidebar {
-    width: 300px;
-    background-color: #f8f9fa;
-    border-right: 1px solid #dee2e6;
-    overflow-y: auto;
-  }
-
-  .chat-main {
-    flex: 1;
+    height: calc(100vh - 40px);
     display: flex;
     flex-direction: column;
+    background: var(--chat-bg);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px var(--shadow-color);
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+    max-width: 1200px;
+    margin: 0 auto;
   }
 
   .chat-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
-    background-color: #ffffff;
+    padding: 24px;
+    background: var(--chat-bg);
   }
 
   .chat-input-area {
     padding: 20px;
-    border-top: 1px solid #dee2e6;
-    background-color: #f8f9fa;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
   }
 
   .message {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
     display: flex;
+    animation: slideIn 0.3s ease-out;
+    align-items: flex-end;
+    gap: 12px;
   }
 
   .message.user {
@@ -45,657 +43,348 @@
     justify-content: flex-start;
   }
 
+  .message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    object-fit: cover;
+    box-shadow: 0 2px 6px rgba(255, 107, 53, 0.15);
+  }
+
+  .message.user .message-avatar {
+    order: 2;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
   .message-bubble {
     max-width: 70%;
-    padding: 12px 16px;
+    padding: 14px 18px;
     border-radius: 18px;
     word-wrap: break-word;
-    white-space: pre-wrap;
+    font-size: 15px;
     line-height: 1.5;
+    box-shadow: 0 1px 2px var(--shadow-color);
+    flex: 1;
   }
 
-  /* 판례 검색 결과 스타일링 */
+  .message.user .message-bubble {
+    background: var(--message-user-bg);
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 4px;
+  }
+
   .message.bot .message-bubble {
-    background-color: #f8f9fa;
-    color: #333;
+    background: var(--message-bot-bg);
+    color: var(--text-primary);
     margin-right: auto;
-    border: 1px solid #e9ecef;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-light);
+    border-bottom-left-radius: 4px;
   }
 
-  /* 마크다운 스타일 지원 */
+  /* 마크다운 렌더링 스타일 추가 */
+  .message-bubble h1,
+  .message-bubble h2,
   .message-bubble h3,
-  .message-bubble h4 {
-    margin: 8px 0;
-    color: #333;
-  }
-
-  .message-bubble h3 {
-    font-size: 1.1em;
+  .message-bubble h4,
+  .message-bubble h5,
+  .message-bubble h6 {
+    margin: 16px 0 8px 0;
+    color: var(--primary-color);
     font-weight: 600;
   }
 
+  .message-bubble h1 {
+    font-size: 1.4em;
+  }
+  .message-bubble h2 {
+    font-size: 1.3em;
+  }
+  .message-bubble h3 {
+    font-size: 1.2em;
+  }
   .message-bubble h4 {
+    font-size: 1.1em;
+  }
+  .message-bubble h5 {
+    font-size: 1.05em;
+  }
+  .message-bubble h6 {
     font-size: 1em;
-    font-weight: 500;
   }
 
   .message-bubble strong {
     font-weight: 600;
+    color: var(--text-primary);
   }
 
-  .message-bubble ul {
+  .message-bubble ul,
+  .message-bubble ol {
     margin: 8px 0;
     padding-left: 20px;
   }
 
   .message-bubble li {
     margin: 4px 0;
+    line-height: 1.4;
   }
 
-  /* 이모지 크기 조정 */
-  .message-bubble .emoji {
-    font-size: 1.1em;
+  .message-bubble p {
+    margin: 8px 0;
   }
 
-  .message.user .message-bubble {
-    background-color: #007bff;
-    color: white;
-    margin-left: auto;
+  .message-bubble blockquote {
+    border-left: 3px solid var(--primary-color);
+    padding-left: 12px;
+    margin: 12px 0;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    padding: 8px 12px;
   }
 
-  .message.bot .message-bubble {
-    background-color: #f8f9fa;
-    color: #333;
-    margin-right: auto;
-    border: 1px solid #e9ecef;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  .message-bubble code {
+    background: var(--bg-tertiary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "Courier New", monospace;
+    font-size: 0.9em;
   }
 
-  .session-item {
-    padding: 12px 16px;
-    border-bottom: 1px solid #dee2e6;
+  .welcome-section {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 40px 20px;
+  }
+
+  .welcome-section .bi {
+    color: var(--primary-color);
+    margin-bottom: 16px;
+  }
+
+  .welcome-section h4 {
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .welcome-section p {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .example-card {
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-light);
+    background: var(--bg-secondary);
   }
 
-  .session-item:hover {
-    background-color: #e9ecef;
+  .example-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
   }
 
-  .session-item.active {
-    background-color: #007bff;
-    color: white;
+  .example-card .card-title {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 8px;
   }
 
-  .session-title {
-    font-weight: 500;
-    margin-bottom: 4px;
+  .example-card .card-text {
+    color: var(--text-secondary);
+    line-height: 1.4;
   }
 
-  .session-time {
-    font-size: 0.85em;
-    opacity: 0.7;
+  .input-group .form-control {
+    border: 1px solid var(--border-color);
+    border-radius: 12px 0 0 12px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    resize: none;
+    font-size: 15px;
+    padding: 14px 16px;
   }
 
-  @media (max-width: 768px) {
-    .chat-sidebar {
-      display: none;
+  .input-group .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--input-focus);
+    background: var(--input-bg);
+    color: var(--text-primary);
+  }
+
+  .input-group .btn-primary {
+    border-radius: 0 12px 12px 0;
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    padding: 14px 20px;
+    font-weight: 600;
+  }
+
+  .input-group .btn-primary:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+    transform: none;
+  }
+
+  .chat-info {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .loading .message-bubble {
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
     }
   }
 
-  /* 트럭 로딩 애니메이션 CSS */
-  .loader {
-    width: fit-content;
-    height: fit-content;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .truckWrapper {
-    width: 200px;
-    height: 100px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    align-items: center;
-    justify-content: flex-end;
-    overflow-x: hidden;
-  }
-  .truckBody {
-    width: 130px;
-    height: fit-content;
-    margin-bottom: 6px;
-    animation: motion 1s linear infinite;
-  }
-  @keyframes motion {
-    0% {
-      transform: translateY(0px);
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
     }
     50% {
-      transform: translateY(3px);
+      opacity: 0.6;
     }
-    100% {
-      transform: translateY(0px);
-    }
-  }
-  .truckTires {
-    width: 130px;
-    height: fit-content;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0px 10px 0px 15px;
-    position: absolute;
-    bottom: 0;
-  }
-  .truckTires svg {
-    width: 24px;
-  }
-  .road {
-    width: 100%;
-    height: 1.5px;
-    background-color: #282828;
-    position: relative;
-    bottom: 0;
-    align-self: flex-end;
-    border-radius: 3px;
-  }
-  .road::before {
-    content: "";
-    position: absolute;
-    width: 20px;
-    height: 100%;
-    background-color: #282828;
-    right: -50%;
-    border-radius: 3px;
-    animation: roadAnimation 1.4s linear infinite;
-    border-left: 10px solid white;
-  }
-  .road::after {
-    content: "";
-    position: absolute;
-    width: 10px;
-    height: 100%;
-    background-color: #282828;
-    right: -65%;
-    border-radius: 3px;
-    animation: roadAnimation 1.4s linear infinite;
-    border-left: 4px solid white;
-  }
-  .lampPost {
-    position: absolute;
-    bottom: 0;
-    right: -90%;
-    height: 90px;
-    animation: roadAnimation 1.4s linear infinite;
-  }
-  @keyframes roadAnimation {
-    0% {
-      transform: translateX(0px);
-    }
-    100% {
-      transform: translateX(-350px);
-    }
-  }
-  .ratio-bar-container {
-    width: 100%;
-    max-width: 320px;
-    height: 22px;
-    background: #eee;
-    border-radius: 12px;
-    overflow: hidden;
-    margin: 8px 0;
-    display: flex;
-    font-size: 13px;
-  }
-  .ratio-bar-a {
-    background: #3b82f6;
-    color: #fff;
-    text-align: center;
-    height: 100%;
-    line-height: 22px;
-    transition: width 0.5s;
-  }
-  .ratio-bar-b {
-    background: #f87171;
-    color: #fff;
-    text-align: center;
-    height: 100%;
-    line-height: 22px;
-    transition: width 0.5s;
-  }
-  /* 마크다운 스타일 개선 */
-  .message-bubble h1,
-  .message-bubble h2,
-  .message-bubble h3,
-  .message-bubble h4 {
-    font-weight: bold;
-    margin: 0.7em 0 0.3em 0;
-  }
-  .message-bubble ul,
-  .message-bubble ol {
-    margin: 0.5em 0 0.5em 1.2em;
-    padding-left: 1.2em;
-  }
-  .message-bubble li {
-    margin-bottom: 0.2em;
-  }
-  .message-bubble hr {
-    border: none;
-    border-top: 1.5px solid #ddd;
-    margin: 1em 0;
-  }
-  .message-bubble strong {
-    font-weight: bold;
-  }
-  .message-bubble em {
-    font-style: italic;
-  }
-  .message-bubble a {
-    color: #2563eb;
-    text-decoration: underline;
   }
 </style>
 {% endblock %} {% block content %}
-<div class="container-fluid">
-  <div class="chat-container">
-    <!-- 사이드바 - 채팅 히스토리 -->
-    <div class="chat-sidebar">
-      <div class="p-3 border-bottom">
-        <h5 class="mb-0">채팅 기록</h5>
-        <button class="btn btn-primary btn-sm mt-2" id="newChatBtn">
-          <i class="bi bi-plus"></i> 새 상담 시작
-        </button>
-      </div>
+<div class="chat-container">
+  <!-- 채팅 메시지 영역 -->
+  <div class="chat-messages" id="chatMessages">
+    <div class="welcome-section">
+      <img
+        src="{% static 'img/mainlogo.png' %}"
+        alt="노느 로고"
+        style="
+          width: 120px;
+          height: 120px;
+          border-radius: 16px;
+          margin-bottom: 20px;
+          object-fit: contain;
+          box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+          background: white;
+          padding: 10px;
+        "
+      />
+      <h4 class="mt-3">교통사고 상담 챗봇 노느</h4>
+      <p>교통사고 상황을 알려주시면 과실비율을 분석해드립니다.</p>
 
-      <div class="session-list">
-        {% for session in recent_sessions %}
-        <div class="session-item" data-session-id="{{ session.session_id }}">
-          <div class="session-title">{{ session.title }}</div>
-          <div class="session-time">
-            {{ session.updated_at|date:"m월 d일 H:i" }} ({{
-            session.message_count }}개 메시지)
-          </div>
-        </div>
-        {% empty %}
-        <div class="p-3 text-muted text-center">
-          <i class="bi bi-chat"></i><br />
-          아직 상담 기록이 없습니다.
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-
-    <!-- 메인 채팅 영역 -->
-    <div class="chat-main">
-      <!-- 채팅 메시지 영역 -->
-      <div class="chat-messages" id="chatMessages">
-        <div class="text-center text-muted py-5">
-          <i class="bi bi-chat-dots fs-1"></i>
-          <h4 class="mt-3">교통사고 상담 챗봇 노느</h4>
-          <p>교통사고 상황을 알려주시면 과실비율을 분석해드립니다.</p>
-
-          <div class="row mt-4">
-            <!-- 교통사고 과실비율 분석 -->
-            <div class="col-md-6 col-lg-3 mb-3">
-              <div
-                class="card example-card h-100"
-                onclick="sendExampleMessage('신호등이 있는 교차로에서 좌회전 중 직진차와 충돌한 경우 과실비율은?')"
-              >
-                <div class="card-body text-start">
-                  <h6 class="card-title">🚗 과실비율 분석</h6>
-                  <p class="card-text small">
-                    신호등이 있는 교차로에서 좌회전 중 직진차와 충돌한 경우
-                    과실비율은?
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- 판례 검색 -->
-            <div class="col-md-6 col-lg-3 mb-3">
-              <div
-                class="card example-card h-100"
-                onclick="sendExampleMessage('고속도로에서 차로변경 중 사고가 난 사건의 판례를 찾아주세요')"
-              >
-                <div class="card-body text-start">
-                  <h6 class="card-title">⚖️ 판례 검색</h6>
-                  <p class="card-text small">
-                    고속도로에서 차로변경 중 사고가 난 사건의 판례를 찾아주세요
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- 도로교통법 조회 -->
-            <div class="col-md-6 col-lg-3 mb-3">
-              <div
-                class="card example-card h-100"
-                onclick="sendExampleMessage('도로교통법 제25조에 대해 설명해주세요')"
-              >
-                <div class="card-body text-start">
-                  <h6 class="card-title">📜 도로교통법</h6>
-                  <p class="card-text small">
-                    도로교통법 제25조에 대해 설명해주세요
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- 용어 설명 -->
-            <div class="col-md-6 col-lg-3 mb-3">
-              <div
-                class="card example-card h-100"
-                onclick="sendExampleMessage('차마에 대해 설명해주세요')"
-              >
-                <div class="card-body text-start">
-                  <h6 class="card-title">📖 용어 설명</h6>
-                  <p class="card-text small">차마에 대해 설명해주세요</p>
-                </div>
-              </div>
+      <div class="row mt-4">
+        <!-- 1. 교통사고 상황 분석 (accident 카테고리) -->
+        <div class="col-md-6 mb-3">
+          <div
+            class="card example-card"
+            onclick="sendExampleMessage('신호등이 있는 교차로에서 제가 좌회전하려는데 맞은편에서 직진해오던 차와 부딪혔어요. 제가 좌회전 신호를 확인하고 들어갔는데 상대방이 과속으로 와서 충돌했습니다.')"
+          >
+            <div class="card-body text-start">
+              <h6 class="card-title">🚗 사고 상황 분석</h6>
+              <p class="card-text small">
+                교차로 좌회전 중 직진차와 충돌 - 과실비율 분석
+              </p>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- 메시지 입력 영역 -->
-      <div class="chat-input-area">
-        <div class="input-group">
-          <textarea
-            class="form-control"
-            id="messageInput"
-            placeholder="교통사고 상황을 자세히 설명해주세요..."
-            rows="2"
-          ></textarea>
-          <button class="btn btn-primary" id="sendBtn" type="button">
-            <i class="bi bi-send"></i> 전송
-          </button>
+        
+        <!-- 2. 판례 검색 (precedent 카테고리) -->
+        <div class="col-md-6 mb-3">
+          <div
+            class="card example-card"
+            onclick="sendExampleMessage('대법원 2019다12345 판례를 찾아주세요')"
+          >
+            <div class="card-body text-start">
+              <h6 class="card-title">⚖️ 판례 검색</h6>
+              <p class="card-text small">
+                사건번호로 법원 판례 검색 및 상세 내용 확인
+              </p>
+            </div>
+          </div>
         </div>
-        <small class="text-muted">
-          <i class="bi bi-info-circle"></i>
-          더 정확한 분석을 위해 사고 위치, 신호등 상황, 각 차량의 행동을
-          구체적으로 알려주세요.
-        </small>
+        
+        <!-- 3. 도로교통법 조회 (law 카테고리) -->
+        <div class="col-md-6 mb-3">
+          <div
+            class="card example-card"
+            onclick="sendExampleMessage('도로교통법 제25조에 대해 알려주세요')"
+          >
+            <div class="card-body text-start">
+              <h6 class="card-title">📚 법률 조회</h6>
+              <p class="card-text small">
+                도로교통법 조문 내용 및 적용 사례 안내
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 4. 용어 설명 (term 카테고리) -->
+        <div class="col-md-6 mb-3">
+          <div
+            class="card example-card"
+            onclick="sendExampleMessage('과실비율이 무엇인가요?')"
+          >
+            <div class="card-body text-start">
+              <h6 class="card-title">📖 용어 설명</h6>
+              <p class="card-text small">
+                교통사고 관련 법률 용어의 정확한 의미 설명
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- 트럭 로딩: 채팅 메시지 영역 바로 아래 -->
-<div
-  id="chat-loader"
-  style="
-    display: none;
-    width: 100%;
-    justify-content: center;
-    align-items: center;
-    margin: 20px 0 0 0;
-  "
->
-  <div class="loader">
-    <div class="truckWrapper">
-      <div class="truckBody">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 198 93"
-          class="trucksvg"
-        >
-          <path
-            stroke-width="3"
-            stroke="#282828"
-            fill="#F83D3D"
-            d="M135 22.5H177.264C178.295 22.5 179.22 23.133 179.594 24.0939L192.33 56.8443C192.442 57.1332 192.5 57.4404 192.5 57.7504V89C192.5 90.3807 191.381 91.5 190 91.5H135C133.619 91.5 132.5 90.3807 132.5 89V25C132.5 23.6193 133.619 22.5 135 22.5Z"
-          ></path>
-          <path
-            stroke-width="3"
-            stroke="#282828"
-            fill="#7D7C7C"
-            d="M146 33.5H181.741C182.779 33.5 183.709 34.1415 184.078 35.112L190.538 52.112C191.16 53.748 189.951 55.5 188.201 55.5H146C144.619 55.5 143.5 54.3807 143.5 53V36C143.5 34.6193 144.619 33.5 146 33.5Z"
-          ></path>
-          <path
-            stroke-width="2"
-            stroke="#282828"
-            fill="#282828"
-            d="M150 65C150 65.39 149.763 65.8656 149.127 66.2893C148.499 66.7083 147.573 67 146.5 67C145.427 67 144.501 66.7083 143.873 66.2893C143.237 65.8656 143 65.39 143 65C143 64.61 143.237 64.1344 143.873 63.7107C144.501 63.2917 145.427 63 146.5 63C147.573 63 148.499 63.2917 149.127 63.7107C149.763 64.1344 150 64.61 150 65Z"
-          ></path>
-          <rect
-            stroke-width="2"
-            stroke="#282828"
-            fill="#FFFCAB"
-            rx="1"
-            height="7"
-            width="5"
-            y="63"
-            x="187"
-          ></rect>
-          <rect
-            stroke-width="2"
-            stroke="#282828"
-            fill="#282828"
-            rx="1"
-            height="11"
-            width="4"
-            y="81"
-            x="193"
-          ></rect>
-          <rect
-            stroke-width="3"
-            stroke="#282828"
-            fill="#DFDFDF"
-            rx="2.5"
-            height="90"
-            width="121"
-            y="1.5"
-            x="6.5"
-          ></rect>
-          <rect
-            stroke-width="2"
-            stroke="#282828"
-            fill="#DFDFDF"
-            rx="2"
-            height="4"
-            width="6"
-            y="84"
-            x="1"
-          ></rect>
-        </svg>
-      </div>
-      <div class="truckTires">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 30 30"
-          class="tiresvg"
-        >
-          <circle
-            stroke-width="3"
-            stroke="#282828"
-            fill="#282828"
-            r="13.5"
-            cy="15"
-            cx="15"
-          ></circle>
-          <circle fill="#DFDFDF" r="7" cy="15" cx="15"></circle>
-        </svg>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 30 30"
-          class="tiresvg"
-        >
-          <circle
-            stroke-width="3"
-            stroke="#282828"
-            fill="#282828"
-            r="13.5"
-            cy="15"
-            cx="15"
-          ></circle>
-          <circle fill="#DFDFDF" r="7" cy="15" cx="15"></circle>
-        </svg>
-      </div>
-      <div class="road"></div>
-      <svg
-        xml:space="preserve"
-        viewBox="0 0 453.459 453.459"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        xmlns="http://www.w3.org/2000/svg"
-        id="Capa_1"
-        version="1.1"
-        fill="#000000"
-        class="lampPost"
-      >
-        <path
-          d="M252.882,0c-37.781,0-68.686,29.953-70.245,67.358h-6.917v8.954c-26.109,2.163-45.463,10.011-45.463,19.366h9.993
-c-1.65,5.146-2.507,10.54-2.507,16.017c0,28.956,23.558,52.514,52.514,52.514c28.956,0,52.514-23.558,52.514-52.514
-c0-5.478-0.856-10.872-2.506-16.017h9.992c0-9.354-19.352-17.204-45.463-19.366v-8.954h-6.149C200.189,38.779,223.924,16,252.882,16
-c29.952,0,54.32,24.368,54.32,54.32c0,28.774-11.078,37.009-25.105,47.437c-17.444,12.968-37.216,27.667-37.216,78.884v113.914
-h-0.797c-5.068,0-9.174,4.108-9.174,9.177c0,2.844,1.293,5.383,3.321,7.066c-3.432,27.933-26.851,95.744-8.226,115.459v11.202h45.75
-v-11.202c18.625-19.715-4.794-87.527-8.227-115.459c2.029-1.683,3.322-4.223,3.322-7.066c0-5.068-4.107-9.177-9.176-9.177h-0.795
-V196.641c0-43.174,14.942-54.283,30.762-66.043c14.793-10.997,31.559-23.461,31.559-60.277C323.202,31.545,291.656,0,252.882,0z
-M232.77,111.694c0,23.442-19.071,42.514-42.514,42.514c-23.442,0-42.514-19.072-42.514-42.514c0-5.531,1.078-10.957,3.141-16.017
-h78.747C231.693,100.736,232.77,106.162,232.77,111.694z"
-        ></path>
-      </svg>
+  <!-- 메시지 입력 영역 -->
+  <div class="chat-input-area">
+    <div class="input-group">
+      <textarea
+        class="form-control"
+        id="messageInput"
+        placeholder="교통사고 상황을 자세히 설명해주세요..."
+        rows="2"
+      ></textarea>
+      <button class="btn btn-primary" id="sendBtn" type="button">
+        <i class="bi bi-send"></i> 전송
+      </button>
+    </div>
+    <div class="chat-info">
+      <i class="bi bi-info-circle"></i>
+      더 정확한 분석을 위해 사고 위치, 신호등 상황, 각 차량의 행동을 구체적으로
+      알려주세요.
     </div>
   </div>
 </div>
 {% endblock %} {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
 <script>
   let currentSessionId = null;
-  let chatSocket = null;
 
-  // marked.js CDN 추가
-  if (!window.marked) {
-    var script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
-    document.head.appendChild(script);
-  }
-
-  // ✅ WebSocket 연결 함수
-  function connectWebSocket() {
-    // 새 세션 ID 생성 (UUID 간단 버전)
-    if (!currentSessionId) {
-      currentSessionId = "session_" + Math.random().toString(36).substr(2, 9);
-    }
-
-    // WebSocket 연결
-    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
-    const wsPath = `${wsScheme}://${window.location.host}/ws/chat/${currentSessionId}/`;
-
-    chatSocket = new WebSocket(wsPath);
-
-    // 연결 성공
-    chatSocket.onopen = function (e) {
-      console.log("✅ WebSocket 연결 성공:", currentSessionId);
-      showConnectionStatus("connected");
-    };
-
-    // 메시지 수신
-    chatSocket.onmessage = function (e) {
-      const data = JSON.parse(e.data);
-      handleWebSocketMessage(data);
-    };
-
-    // 연결 종료
-    chatSocket.onclose = function (e) {
-      console.log("❌ WebSocket 연결 종료");
-      showConnectionStatus("disconnected");
-
-      // 재연결 시도 (3초 후)
-      setTimeout(() => {
-        if (chatSocket.readyState === WebSocket.CLOSED) {
-          connectWebSocket();
-        }
-      }, 3000);
-    };
-
-    // 오류 처리
-    chatSocket.onerror = function (e) {
-      console.error("🚨 WebSocket 오류:", e);
-      showConnectionStatus("error");
-    };
-  }
-
-  // ✅ WebSocket 메시지 처리
-  function handleWebSocketMessage(data) {
-    switch (data.type) {
-      case "connection_established":
-        console.log("연결 확인:", data.message);
-        break;
-
-      case "user_message_received":
-        // 사용자 메시지 확인 (이미 UI에 추가됨)
-        console.log("메시지 수신 확인:", data.message);
-        break;
-
-      case "processing_started":
-        // 트럭 로딩 애니메이션 표시
-        $("#chatMessages").append(getTruckLoaderHtml());
-        scrollToBottom();
-        break;
-
-      case "bot_response_complete":
-        // 로딩 제거 및 응답 표시
-        $("#truck-loader-message").remove();
-        addMessage(data.message, "bot");
-        addRatioBarIfNeeded();
-        scrollToBottom();
-
-        // 사이드바 업데이트 (필요시)
-        updateSidebar("새 대화");
-        break;
-
-      case "error":
-        $("#truck-loader-message").remove();
-        addMessage(`❌ 오류: ${data.message}`, "bot");
-        scrollToBottom();
-        break;
-
-      case "pong":
-        console.log("연결 상태 확인: OK");
-        break;
-    }
-  }
-
-  // ✅ 연결 상태 표시
-  function showConnectionStatus(status) {
-    let statusHtml = "";
-    let statusClass = "";
-
-    switch (status) {
-      case "connected":
-        statusHtml = '<i class="bi bi-wifi text-success"></i> 연결됨';
-        statusClass = "text-success";
-        break;
-      case "disconnected":
-        statusHtml = '<i class="bi bi-wifi-off text-warning"></i> 연결 끊김';
-        statusClass = "text-warning";
-        break;
-      case "error":
-        statusHtml =
-          '<i class="bi bi-exclamation-triangle text-danger"></i> 연결 오류';
-        statusClass = "text-danger";
-        break;
-    }
-
-    // 상태 표시 영역이 있다면 업데이트
-    if ($("#connectionStatus").length) {
-      $("#connectionStatus").html(statusHtml).attr("class", statusClass);
-    }
-  }
-
-  // ✅ 자동 스크롤
-  function scrollToBottom() {
-    const chatMessages = $("#chatMessages");
-    chatMessages.scrollTop(chatMessages[0].scrollHeight);
-  }
-
-  // 페이지 로드 시 WebSocket 연결
-  $(document).ready(function () {
-    connectWebSocket();
+  // 마크다운 설정
+  marked.setOptions({
+    breaks: true,
+    gfm: true,
+    headerIds: false,
+    mangle: false,
   });
 
   // 메시지 전송
@@ -707,234 +396,232 @@ h78.747C231.693,100.736,232.77,106.162,232.77,111.694z"
     }
   });
 
-  // 새 채팅 시작
-  $("#newChatBtn").click(function () {
-    // 기존 연결 종료
-    if (chatSocket) {
-      chatSocket.close();
-    }
-
-    // 새 세션으로 재연결
-    currentSessionId = null;
-    $("#chatMessages").html(`
-      <div class="text-center text-muted py-5" style="max-width: 70%; margin: 0 auto;">
-        <i class="bi bi-chat-dots fs-1"></i>
-        <h4 class="mt-3">교통사고 상담 챗봇 노느</h4>
-        <p>교통사고 상황을 알려주시면 과실비율을 분석해드립니다.</p>
-
-        <div class="row mt-4" style="max-width: 100%;">
-          <!-- 교통사고 과실비율 분석 -->
-          <div class="col-md-6 col-lg-6 mb-3">
-            <div
-              class="card example-card h-100"
-              onclick="sendExampleMessage('신호등이 있는 교차로에서 좌회전 중 직진차와 충돌한 경우 과실비율은?')"
-            >
-              <div class="card-body text-start">
-                <h6 class="card-title">🚗 과실비율 분석</h6>
-                <p class="card-text small">
-                  신호등이 있는 교차로에서 좌회전 중 직진차와 충돌한 경우
-                  과실비율은?
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 판례 검색 -->
-          <div class="col-md-6 col-lg-6 mb-3">
-            <div
-              class="card example-card h-100"
-              onclick="sendExampleMessage('고속도로에서 차로변경 중 사고가 난 사건의 판례를 찾아주세요')"
-            >
-              <div class="card-body text-start">
-                <h6 class="card-title">⚖️ 판례 검색</h6>
-                <p class="card-text small">
-                  고속도로에서 차로변경 중 사고가 난 사건의 판례를 찾아주세요
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 도로교통법 조회 -->
-          <div class="col-md-6 col-lg-6 mb-3">
-            <div
-              class="card example-card h-100"
-              onclick="sendExampleMessage('도로교통법 제25조에 대해 설명해주세요')"
-            >
-              <div class="card-body text-start">
-                <h6 class="card-title">📜 도로교통법</h6>
-                <p class="card-text small">
-                  도로교통법 제25조에 대해 설명해주세요
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 용어 설명 -->
-          <div class="col-md-6 col-lg-6 mb-3">
-            <div
-              class="card example-card h-100"
-              onclick="sendExampleMessage('차마에 대해 설명해주세요')"
-            >
-              <div class="card-body text-start">
-                <h6 class="card-title">📖 용어 설명</h6>
-                <p class="card-text small">차마에 대해 설명해주세요</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `);
-    $(".session-item").removeClass("active");
-
-    // 새 WebSocket 연결
-    connectWebSocket();
-  });
-
   // 예시 메시지 전송
   function sendExampleMessage(message) {
     $("#messageInput").val(message);
     sendMessage();
   }
 
-  function getTruckLoaderHtml() {
-    return `
-    <div class="message bot loading" id="truck-loader-message">
-      <div class="message-bubble" style="background:transparent; box-shadow:none; border:none;">
-        <div class="loader" style="margin:0 auto;">
-          <div class="truckWrapper">
-            <div class="truckBody">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 198 93" class="trucksvg"><path stroke-width="3" stroke="#282828" fill="#F83D3D" d="M135 22.5H177.264C178.295 22.5 179.22 23.133 179.594 24.0939L192.33 56.8443C192.442 57.1332 192.5 57.4404 192.5 57.7504V89C192.5 90.3807 191.381 91.5 190 91.5H135C133.619 91.5 132.5 90.3807 132.5 89V25C132.5 23.6193 133.619 22.5 135 22.5Z"></path><path stroke-width="3" stroke="#282828" fill="#7D7C7C" d="M146 33.5H181.741C182.779 33.5 183.709 34.1415 184.078 35.112L190.538 52.112C191.16 53.748 189.951 55.5 188.201 55.5H146C144.619 55.5 143.5 54.3807 143.5 53V36C143.5 34.6193 144.619 33.5 146 33.5Z"></path><path stroke-width="2" stroke="#282828" fill="#282828" d="M150 65C150 65.39 149.763 65.8656 149.127 66.2893C148.499 66.7083 147.573 67 146.5 67C145.427 67 144.501 66.7083 143.873 66.2893C143.237 65.8656 143 65.39 143 65C143 64.61 143.237 64.1344 143.873 63.7107C144.501 63.2917 145.427 63 146.5 63C147.573 63 148.499 63.2917 149.127 63.7107C149.763 64.1344 150 64.61 150 65Z"></path><rect stroke-width="2" stroke="#282828" fill="#FFFCAB" rx="1" height="7" width="5" y="63" x="187"></rect><rect stroke-width="2" stroke="#282828" fill="#282828" rx="1" height="11" width="4" y="81" x="193"></rect><rect stroke-width="3" stroke="#282828" fill="#DFDFDF" rx="2.5" height="90" width="121" y="1.5" x="6.5"></rect><rect stroke-width="2" stroke="#282828" fill="#DFDFDF" rx="2" height="4" width="6" y="84" x="1"></rect></svg>
-            </div>
-            <div class="truckTires">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 30 30" class="tiresvg"><circle stroke-width="3" stroke="#282828" fill="#282828" r="13.5" cy="15" cx="15"></circle><circle fill="#DFDFDF" r="7" cy="15" cx="15"></circle></svg>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 30 30" class="tiresvg"><circle stroke-width="3" stroke="#282828" fill="#282828" r="13.5" cy="15" cx="15"></circle><circle fill="#DFDFDF" r="7" cy="15" cx="15"></circle></svg>
-            </div>
-            <div class="road"></div>
-            <svg xml:space="preserve" viewBox="0 0 453.459 453.459" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" id="Capa_1" version="1.1" fill="#000000" class="lampPost"><path d="M252.882,0c-37.781,0-68.686,29.953-70.245,67.358h-6.917v8.954c-26.109,2.163-45.463,10.011-45.463,19.366h9.993\nc-1.65,5.146-2.507,10.54-2.507,16.017c0,28.956,23.558,52.514,52.514,52.514c28.956,0,52.514-23.558,52.514-52.514\nc0-5.478-0.856-10.872-2.506-16.017h9.992c0-9.354-19.352-17.204-45.463-19.366v-8.954h-6.149C200.189,38.779,223.924,16,252.882,16\nc29.952,0,54.32,24.368,54.32,54.32c0,28.774-11.078,37.009-25.105,47.437c-17.444,12.968-37.216,27.667-37.216,78.884v113.914\nh-0.797c-5.068,0-9.174,4.108-9.174,9.177c0,2.844,1.293,5.383,3.321,7.066c-3.432,27.933-26.851,95.744-8.226,115.459v11.202h45.75\nv-11.202c18.625-19.715-4.794-87.527-8.227-115.459c2.029-1.683,3.322-4.223,3.322-7.066c0-5.068-4.107-9.177-9.176-9.177h-0.795\nV196.641c0-43.174,14.942-54.283,30.762-66.043c14.793-10.997,31.559-23.461,31.559-60.277C323.202,31.545,291.656,0,252.882,0z\nM232.77,111.694c0,23.442-19.071,42.514-42.514,42.514c-23.442,0-42.514-19.072-42.514-42.514c0-5.531,1.078-10.957,3.141-16.017\nh78.747C231.693,100.736,232.77,106.162,232.77,111.694z"></path></svg>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  `;
-  }
-
-  // ✅ WebSocket 메시지 전송 함수
+  // 메시지 전송 함수
   function sendMessage() {
     const message = $("#messageInput").val().trim();
     if (!message) return;
 
-    // WebSocket 연결 확인
-    if (!chatSocket || chatSocket.readyState !== WebSocket.OPEN) {
-      addMessage("❌ 연결이 끊어졌습니다. 재연결을 시도합니다...", "bot");
-      connectWebSocket();
-      return;
-    }
+    // 환영 화면 숨기기
+    $(".welcome-section").hide();
 
-    // 사용자 메시지 즉시 표시
+    // 사용자 메시지 표시
     addMessage(message, "user");
     $("#messageInput").val("");
-    scrollToBottom();
 
-    // WebSocket으로 메시지 전송
-    chatSocket.send(
-      JSON.stringify({
-        type: "chat_message",
-        message: message,
-      })
-    );
-  }
+    // 봇 응답 대기 표시
+    addMessage("분석 중입니다...", "bot", true);
 
-  // 메시지 추가 함수
-  function addMessage(text, sender, isLoading = false) {
-    let html = "";
-    if (sender === "bot") {
-      // 마크다운 → HTML 변환
-      html += `<div class="message ${sender}${isLoading ? " loading" : ""}">`;
-      html += `<div class="message-bubble">${
-        window.marked ? marked.parse(text) : text
-      }</div>`;
-      html += `</div>`;
-    } else {
-      html += `<div class="message ${sender}${isLoading ? " loading" : ""}">`;
-      html += `<div class="message-bubble">${text}</div>`;
-      html += `</div>`;
-    }
-    document
-      .getElementById("chatMessages")
-      .insertAdjacentHTML("beforeend", html);
-  }
-
-  // 사이드바 업데이트
-  function updateSidebar(title) {
-    // 새 세션이면 사이드바에 추가
-    // (실제로는 페이지 새로고침 또는 AJAX로 업데이트)
-  }
-
-  // 채팅 히스토리 로드
-  $(".session-item").click(function () {
-    const sessionId = $(this).data("session-id");
-    loadChatHistory(sessionId);
-
-    $(".session-item").removeClass("active");
-    $(this).addClass("active");
-  });
-
-  // 채팅 히스토리 로드 함수
-  function loadChatHistory(sessionId) {
-    currentSessionId = sessionId;
-
+    // API 호출
     $.ajax({
-      url: `/api/chat-history/${sessionId}/`,
-      method: "GET",
+      url: '{% url "main:send_message" %}',
+      method: "POST",
+      data: JSON.stringify({
+        message: message,
+        session_id: currentSessionId,
+      }),
+      contentType: "application/json",
       success: function (response) {
         if (response.success) {
-          $("#chatMessages").empty();
+          // 대기 메시지 제거
+          $(".message.bot:last").remove();
 
-          response.messages.forEach(function (msg) {
-            addMessage(msg.content, msg.sender);
-          });
+          // 봇 응답 표시 (마크다운 렌더링)
+          addMessage(response.bot_response, "bot");
+
+          // 세션 ID 업데이트
+          currentSessionId = response.session_id;
+
+          // 사이드바 채팅 기록 새로고침
+          if (typeof loadChatHistory === "function") {
+            loadChatHistory();
+          }
+        } else {
+          $(".message.bot:last").remove();
+          addMessage("죄송합니다. 오류가 발생했습니다.", "bot");
         }
       },
       error: function () {
-        alert("채팅 기록을 불러올 수 없습니다.");
+        $(".message.bot:last").remove();
+        addMessage("네트워크 오류가 발생했습니다.", "bot");
       },
     });
   }
 
-  function renderRatioBar(text) {
-    let match = text.match(/(\d{1,3})\s*[:%]\s*(\d{1,3})/);
-    if (!match) match = text.match(/(\d{1,3})%?\s*vs\s*(\d{1,3})%?/i);
-    if (match) {
-      const a = parseInt(match[1], 10);
-      const b = parseInt(match[2], 10);
-      const total = a + b;
-      const aWidth = (a / total) * 100;
-      const bWidth = (b / total) * 100;
-      return `\n      <div class=\"ratio-bar-container\">\n        <div class=\"ratio-bar-a\" style=\"width:${aWidth}%\">${a}%</div>\n        <div class=\"ratio-bar-b\" style=\"width:${bWidth}%\">${b}%</div>\n      </div>\n    `;
+  // 메시지 추가 함수 (마크다운 렌더링 적용)
+  function addMessage(content, sender, isLoading = false) {
+    const messageClass = sender === "user" ? "user" : "bot";
+    const loadingClass = isLoading ? "loading" : "";
+
+    let avatarHtml = "";
+    if (sender === "bot") {
+      avatarHtml =
+        '<img src="{% static "img/chatbot.png" %}" alt="노느 챗봇" class="message-avatar">';
+    } else {
+      avatarHtml = '<div class="message-avatar">👤</div>';
     }
-    return "";
+
+    // 마크다운 렌더링 (봇 메시지인 경우에만)
+    let renderedContent;
+    if (sender === "bot" && !isLoading) {
+      try {
+        renderedContent = marked.parse(content);
+      } catch (e) {
+        console.warn("마크다운 렌더링 실패:", e);
+        renderedContent = content.replace(/\n/g, "<br>");
+      }
+    } else {
+      renderedContent = isLoading
+        ? '<i class="bi bi-three-dots"></i> ' + content
+        : content.replace(/\n/g, "<br>");
+    }
+
+    const messageHtml = `
+        <div class="message ${messageClass} ${loadingClass}">
+            ${sender === "bot" ? avatarHtml : ""}
+            <div class="message-bubble">
+                ${renderedContent}
+            </div>
+            ${sender === "user" ? avatarHtml : ""}
+        </div>
+    `;
+
+    $("#chatMessages").append(messageHtml);
+    $("#chatMessages").scrollTop($("#chatMessages")[0].scrollHeight);
   }
 
-  function addRatioBarIfNeeded() {
-    const messages = document.querySelectorAll(".message.bot .message-bubble");
-    if (messages.length === 0) return;
-    const lastBubble = messages[messages.length - 1];
-    // 이미 막대바가 있으면 중복 삽입 방지
-    if (lastBubble.querySelector(".ratio-bar-container")) return;
+  // 페이지 로드 시 활성 네비게이션 설정
+  $(document).ready(function () {
+    // 현재 페이지에 따라 네비게이션 활성화
+    const currentPath = window.location.pathname;
+    $(".nav-link").removeClass("active");
 
-    // innerHTML에서 '기본 과실비율' 줄을 찾아 그 아래에 막대바 삽입
-    let html = lastBubble.innerHTML;
-    // '기본 과실비율'로 시작하는 줄을 찾음 (HTML 태그 포함 가능성 고려)
-    const regex =
-      /(기본\s*과실비율[^\n:<]*[:：]?\s*([0-9]{1,3})%?[^0-9]+([0-9]{1,3})%?)/;
-    const match = html.match(regex);
-    if (match) {
-      const ratioText = match[0];
-      const barHtml = renderRatioBar(ratioText);
-      // 해당 줄 바로 뒤에 막대바 삽입
-      lastBubble.innerHTML = html.replace(ratioText, ratioText + barHtml);
+    if (currentPath === "/" || currentPath.includes("/main/")) {
+      $('a[href="{% url "main:index" %}"]').addClass("active");
+    } else if (currentPath.includes("/community/")) {
+      $('a[href="{% url "community:list" %}"]').addClass("active");
+    }
+
+    // URL에서 session 파라미터 확인
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionParam = urlParams.get("session");
+    if (sessionParam) {
+      loadSessionMessages(sessionParam);
+    }
+
+    // 새 채팅 버튼 기능
+    $(".new-chat").click(function (e) {
+      e.preventDefault();
+      startNewChat();
+    });
+  });
+
+  // 새 채팅 시작 함수
+  function startNewChat() {
+    currentSessionId = null;
+    $("#chatMessages").html(`
+      <div class="welcome-section">
+        <img
+          src="{% static 'img/mainlogo.png' %}"
+          alt="노느 로고"
+          style="
+            width: 120px;
+            height: 120px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            object-fit: contain;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+            background: white;
+            padding: 10px;
+          "
+        />
+        <h4 class="mt-3">교통사고 상담 챗봇 노느</h4>
+        <p>교통사고 상황을 알려주시면 과실비율을 분석해드립니다.</p>
+        
+        <div class="row mt-4">
+          <!-- 1. 교통사고 상황 분석 (accident 카테고리) -->
+          <div class="col-md-6 mb-3">
+            <div class="card example-card" onclick="sendExampleMessage('신호등이 있는 교차로에서 제가 좌회전하려는데 맞은편에서 직진해오던 차와 부딪혔어요. 제가 좌회전 신호를 확인하고 들어갔는데 상대방이 과속으로 와서 충돌했습니다.')">
+              <div class="card-body text-start">
+                <h6 class="card-title">🚗 사고 상황 분석</h6>
+                <p class="card-text small">교차로 좌회전 중 직진차와 충돌 - 과실비율 분석</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 2. 판례 검색 (precedent 카테고리) -->
+          <div class="col-md-6 mb-3">
+            <div class="card example-card" onclick="sendExampleMessage('대법원 2019다12345 판례를 찾아주세요')">
+              <div class="card-body text-start">
+                <h6 class="card-title">⚖️ 판례 검색</h6>
+                <p class="card-text small">사건번호로 법원 판례 검색 및 상세 내용 확인</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 3. 도로교통법 조회 (law 카테고리) -->
+          <div class="col-md-6 mb-3">
+            <div class="card example-card" onclick="sendExampleMessage('도로교통법 제25조에 대해 알려주세요')">
+              <div class="card-body text-start">
+                <h6 class="card-title">📚 법률 조회</h6>
+                <p class="card-text small">도로교통법 조문 내용 및 적용 사례 안내</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 4. 용어 설명 (term 카테고리) -->
+          <div class="col-md-6 mb-3">
+            <div class="card example-card" onclick="sendExampleMessage('과실비율이 무엇인가요?')">
+              <div class="card-body text-start">
+                <h6 class="card-title">📖 용어 설명</h6>
+                <p class="card-text small">교통사고 관련 법률 용어의 정확한 의미 설명</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+
+    // 활성 세션 제거
+    $(".session-item").removeClass("active");
+
+    // URL에서 session 파라미터 제거
+    if (window.history.replaceState) {
+      window.history.replaceState(null, null, window.location.pathname);
     }
   }
+
+  // 세션 메시지 로드 함수 (마크다운 렌더링 적용)
+  function loadSessionMessages(sessionId) {
+    $.ajax({
+      url: `{% url "main:chat_history" "dummy" %}`.replace("dummy", sessionId),
+      method: "GET",
+      success: function (response) {
+        if (response.success) {
+          currentSessionId = sessionId;
+          $("#chatMessages").html("");
+
+          response.messages.forEach(function (msg) {
+            addMessage(msg.content, msg.sender);
+          });
+
+          // 활성 세션 표시
+          $(".session-item").removeClass("active");
+          $(`.session-item[data-session-id="${sessionId}"]`).addClass("active");
+        }
+      },
+      error: function () {
+        alert("채팅 기록을 불러오는데 실패했습니다.");
+      },
+    });
+  }
+
+  // 전역 함수로 등록 (base.html에서 호출할 수 있도록)
+  window.loadSessionMessages = loadSessionMessages;
 </script>
 {% endblock %}
