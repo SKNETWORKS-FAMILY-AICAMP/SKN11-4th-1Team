@@ -84,7 +84,7 @@
 
 # 4. 요구사항 명세서
 
-![image.png](./img/요구사항명세서.png)
+[SKN 11기 1TEAM 요구사항 명세서 내용 주소](https://www.notion.so/ohgiraffers/20a649136c1181d4b4d6ce17a188bd6f)
 
 
 <br/><br/>
@@ -99,7 +99,8 @@
 | Embedding Model | ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white) ![Hugging Face](https://img.shields.io/badge/HuggingFace-FFD21F?style=for-the-badge&logo=huggingface&logoColor=black) |
 | Vector DB | ![ChromaDB](https://img.shields.io/badge/ChromaDB-3E5F8A?style=for-the-badge&logo=databricks&logoColor=white) |
 | LLM Model | ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white) |
-| Framework | ![LangChain](https://img.shields.io/badge/LangChain-F9A825?style=for-the-badge&logoColor=white) ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white) |
+| Framework | ![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white) ![LangChain](https://img.shields.io/badge/LangChain-F9A825?style=for-the-badge&logoColor=white)|
+| Deployment | ![AWS EC2](https://img.shields.io/badge/AWS%20EC2-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white) |
 | Collaboration Tool | ![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white) ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white) ![Notion](https://img.shields.io/badge/Notion-181717?style=for-the-badge&logo=notion&logoColor=white) |
 
 
@@ -108,213 +109,38 @@
 # 6. 시스템 아키텍처
 
 
-![image.png](./img/architecture.jpg)
+![image.png](./img/systemarchitecture.png)
 
 <br/>
 
 # 7. 시스템 워크플로우
 
 
-![image.png](./img/workflow.jpg)
+![image.png](./img/systemworkflow.png)
 
-
-<br/><br/>
-
-# 8. 수집한 데이터 및 전처리 요약
-
-<aside>
-
-### 출처
-
-- 과실비율 정보포털 (https://accident.knia.or.kr/qnaCase)
-    - `231107_과실비율인정기준.pdf` : 교통사고 케이스 별 과실비율 적용 기준, 판례에 대한 자료 명시
-- 국가정보센터
-    - 도로교통법 ([https://www.law.go.kr/법령/도로교통법](https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EB%8F%84%EB%A1%9C%EA%B5%90%ED%86%B5%EB%B2%95))
-
-<br/><br/>
-
-## 데이터 구조
-
-![pdf_ex.png](./img/pdf_ex.png)
-
-- ## `car_to_car.json`
-    
-  ### 🚗 car_to_car.json 데이터 구조
-
-| 필드명            | 데이터 타입 | 설명 |
-|-------------------|-------------|------|
-| `id`              | string      | 사고 사례 식별자 (예: `"차1"`) |
-| `category`        | string      | 사고 유형 카테고리 (예: `"자동차"`) |
-| `page`            | integer     | 사고가 등장하는 원본 문서의 페이지 번호 |
-| `description`     | string      | 사고 상황 설명 |
-| `base_ratio`      | object      | 기본 과실비율 정보 |
-| └─ `A`            | integer     | A 차량의 과실 비율 (%) |
-| └─ `B`            | integer     | B 차량의 과실 비율 (%) |
-| `modifiers`       | array       | 과실 비율 조정 요소 목록 |
-| └─ `factor`       | string      | 조정 요소 설명 (예: `"A차량 신호 위반"`) |
-| └─ `adjustment`   | string      | 조정값 (예: `"+10%"`, `"-20%"`) |
-| `legal_notes`     | array       | 참고 법률 또는 판례 (예: `"도로교통법 제5조"`, `"대법원 2011다3250 판결"`) |
-
-    
-   
-    
-#### 🛠️ 전처리 및 변환 과정
-
-1. **PDF 사고 상황별로 분류**
-
-2. **PDF 파일 read**
-
-3. **머릿말/꼬릿말 제거 후 텍스트 추출**
-
-4. **수정요소(예: `~참조한다`)는 요약문으로 재정리하여 JSON에 적용**
-
-5. **없는 값은 `null`로 명시 처리 (예: 참고 판례 없음)**
-
-
-    <br/>
-
-- ## `precedent.json`
-    
-    
-    ### 📂 판례 JSON 데이터 구조
-    
-    | **필드명** | **설명** | **데이터 타입** |
-    |------------|----------|------------------|
-    | `court`    | 판결을 내린 법원명 (예: 대법원, 서울고등법원 등) | `string` |
-    | `case_id`  | 사건번호 (예: 2022다12345, 2019가단67890 등) | `string` |
-    | `content`  | 판례 요지, 판단 이유 등 본문 텍스트 | `string` |
-    
-
-    
-   ### 🧾 판례 문서 파싱 단계
-
-    1. **PDF 파일 read 및 텍스트 추출**
-
-    2. **머릿말/꼬릿말 제거**
-
-    3. **`⊙` 기호로 섹션 시작 감지**
-
-    4. **법원명 및 사건 ID 추출**
-
-    5. **내용 수집** (탭 문자 또는 빈 줄 전까지)
-
-    <br/>
-
-- ## `load_traffic_law.json`
-
-- 국가 정보센터 홈페이지에서 도로교통법 관련 데이터 확보
-    
-    
-    ### 📘 도로교통법 JSON 데이터 구조
-    
-    | **필드명** | **설명** | **데이터 타입** |
-    |------------|----------|------------------|
-    | `조문 제목` | 조문 전체 제목 (예: `"제5조(보행자의 보호)"`) | `string` (key) |
-    | `항 번호` | 해당 조문 안의 항목 구분 (예: `"1항"`, `"2항"` 등) | `string` (key) |
-    | `항 내용` | 해당 항에 포함된 조문 문장 (한 항에 여러 문장일 수도 있음) | `string[]` |
-
-
-    
-- ## `term.json`
-
-- 과실비율 정보포털 ‘과실비율 용어해설‘ section 크롤링
-    
-    
-    ### 📘 term.json 데이터 구조
-    
-    | **필드명** | **설명** | **데이터 타입** |
-    |------------|----------|------------------|
-    | `term`     | 용어명 (예: 도로, 차로, 정차 등) | `string` |
-    | `desc`     | 용어에 대한 설명 (1개 이상의 문장으로 구성된 설명 목록) | `string[]` |
-    
-<br/><br/>
-
-# 9. DB 연동 구현 코드 (링크만)
-
-<aside>
-
-- URL : 
-[vector_db_output/vectordb.ipynb](https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN11-3rd-1Team/blob/main/vector_db_output/vectordb.ipynb)
-
-## **DB 연동 구현 내용**
-- 각 문서별(판례, 용어, 사고상황) 개별 Document 객체 생성
-- OpenAI Embedding 모델로 벡터화
-- 각 Document를 컬렉션 별로 나누어 `Chroma DB`로 저장하여 RAG에 최종 적용
 
 <br/><br/>
 
 # 10. 테스트 계획 및 결과 보고서
 
-<aside>
+## 사용자 관리 페이지
+![image.png](./img/result_user1.png)
+![image.png](./img/result_user2.png)
+![image.png](./img/result_user3.png)
+![image.png](./img/result_user4.png)
 
- ## `사고 상황`
- <p align="center">
-  <img src="./img/carcase_json.png" width="500"/>
-  <img src="./img/carcase.png" width="380"/>
-</p>
+## 메인 페이지
+![image.png](./img/result_main.png)
 
- ## `용어`
- <p align="center">
-  <img src="./img/term_json.png" width="700"/>
-  <img src="./img/term.png" width="380"/>
-</p>
+## 커뮤니티 페이지
+![image.png](./img/result_community1.png)
 
- ## `도로교통법`
- <p align="center">
-  <img src="./img/trafficloadlaw_json.png" width="700"/>
-  <img src="./img/trafficloadlaw.png" width="380"/>
-</p>
-
- ## `판례`
- <p align="center">
-  <img src="./img/precedent_json.png" width="700"/>
-  <img src="./img/precedent.png" width="380"/>
-</p>
-
+## 댓글 페이지
+![image.png](./img/result_comment.png)
 
 <br/><br/>
 
-# 11. 프로그램 개선 노력
 
-### 1. RAG - self리트리버 사용
-- 판례’ 검색의 경우, 임베딩 기반 벡터DB의 한계로 숫자와 한글이 섞인 **`"92도2077"`** 같은 고유값을 의미적 유사도 기반으로 찾아오지 못하는 경우 발생
-- 리트리버에 필터를 적용하여 메타데이터와 고유값이 일치하는 경우 정상적으로 찾아 오는 것 확인
-    - 사용자 입력에서 해당 메타데이터 추출 필요
-- self리트리버 적용 시, query에서 자동으로 메타데이터에 해당하는 부분 추출 및 일치하는 부분 search가능
-### 2. pdf-json 비교검증 → 정확성 향상
- 
-### 3. 프롬프트 최적화
-    
-    
-| 번호 | 항목명               | 설명 |
-|------|----------------------|------|
-| 1    | 🧠 질문 분류          | 사용자의 질문을 사고, 법률, 판례, 용어, 일반 다섯 유형 중 하나로 분류하여 흐름을 제어함 |
-| 2    | 🧷 사건 선택 및 연계   | 유사한 사고 사례를 식별하고 사건 ID를 고정 형식으로 출력하여 후속 판단과 연계 |
-| 3    | ⚖️ 사고 판단 자동화    | 문서 기반 사례를 분석해 과실비율과 판단 사유를 자동 도출하며 응답 일관성을 확보 |
-| 4    | 📚 법률 정보 구조화    | 문서 기반 판례, 조문, 용어를 정형화된 형식으로 요약해 전문성과 응답 품질을 향상 |
-| 5    | 💡 일반 지식 대응      | 문서에 없는 질문도 AI의 상식으로 자연스럽고 유연하게 응답 |
-    
-    
-### 4. 파인튜닝
-
-**Bllossom/llama-3.2-Korean-Bllossom-3B**
-| ![Image](https://github.com/user-attachments/assets/66f5415a-e1dc-47b2-9f79-408af82c0f31) | ![Image](https://github.com/user-attachments/assets/54626f32-8951-46d9-9999-d2815f3699d1)|
-|:------------------------------------:|:------------------------------------:|
-| ChromaDB(consine 유사도)|ChromaDB(consine 유사도)<br>**+ qLoRA 파인튜닝**|
-
-
-
-**saltlux/Ko-Llama3-Luxia-8B**
-| ![Image](https://github.com/user-attachments/assets/5e0f9405-64a9-4029-bd36-f9c184efc71a) | ![Image](https://github.com/user-attachments/assets/19b31c07-ed37-4119-b458-3e8022f2a1ed)|
-|:------------------------------------:|:------------------------------------:|
-| ChromaDB|ChromaDB<br>**+ qLoRA 파인튜닝**|
-
-**saltlux/Ko-Llama3-Luxia-8B**
-| ![Image](https://github.com/user-attachments/assets/9085feab-ad24-4c4f-8450-f6e443af4480) | ![Image](https://github.com/user-attachments/assets/91e8731d-877f-4b01-af9c-103530787c65)|
-|:------------------------------------:|:------------------------------------:|
-|  **ChromaDB(cosine 유사도)**<br> **+ qLoRA 파인튜닝**|**FAISS(cosine 유사도)** <br> **+ qLoRA 파인튜닝**|
-
-<br/><br/>
 
 # 12. 수행결과(테스트/시연 페이지)
 
@@ -324,14 +150,7 @@
 
 <br/><br/>
 
-# 13.추후 업데이트 계획
-
- ###  파인튜닝
-- `장기적인 비용 절감 목표`
-- gpt-4o 최신 토큰 처리 `비용이 높다`.
-- 비용 절감을 위해 저렴한 모델 사용 또는 무료로 있는 모델→ 파인튜닝
-- 우리가 원하는 동작하는 수준만 되도 gpt-4o `(최소 비용감소)`
-
+# 11. 3차 프로젝트 대비 개선점
 
 <br/><br/>
 
