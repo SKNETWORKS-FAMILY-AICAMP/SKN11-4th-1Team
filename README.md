@@ -121,6 +121,24 @@
 
 <br/><br/>
 
+# 화면 정의서
+
+## `Main 채팅 화면` ##
+![image.png](./img/chat.png)
+
+## `login 화면` ##
+![image.png](./img/login.png)
+
+## `logout 화면` ##
+![image.png](./img/logout.png)
+
+## `password reset 화면` ##
+![image.png](./img/password_reset.png)
+
+## `signup 화면` ##
+![image.png](./img/signup.png)
+
+
 # 10. 테스트 계획 및 결과 보고서
 
 ## 사용자 관리 페이지
