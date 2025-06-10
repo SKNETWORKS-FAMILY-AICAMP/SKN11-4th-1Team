@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from core.models import User, ChatSession, ChatMessage
-from .services.ai_classifier import process_user_query
+from .services.ai_classifier import process_user_query, process_user_query_with_memory
 from .utils.memory_system import process_with_memory, record_ai_response, get_session_insights, get_context_enhanced_query
 import json
 import uuid
@@ -314,6 +314,41 @@ def get_session_statistics(request, session_id):
             'success': True,
             'session_id': session_id,
             'insights': memory_insights
+        })
+    
+    except Exception as e:
+        return JsonResponse({'error': f'오류가 발생했습니다: {str(e)}'}, status=500)
+
+
+@require_http_methods(["GET"])
+def get_chat_sessions(request):
+    """사용자의 채팅 세션 목록 가져오기 (사이드바용)"""
+    try:
+        if not request.user.is_authenticated:
+            return JsonResponse({'sessions': []})
+        
+        sessions = ChatSession.objects.filter(
+            user=request.user,
+            is_active=True
+        ).order_by('-updated_at')[:10]
+        
+        sessions_data = []
+        for session in sessions:
+            # 마지막 메시지 가져오기
+            last_message = session.messages.order_by('-created_at').first()
+            
+            sessions_data.append({
+                'session_id': str(session.session_id),
+                'title': session.title,
+                'message_count': session.message_count,
+                'last_message': last_message.content[:50] + '...' if last_message and len(last_message.content) > 50 else (last_message.content if last_message else ''),
+                'updated_at': session.updated_at.strftime('%m/%d %H:%M'),
+                'created_at': session.created_at.strftime('%Y-%m-%d')
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'sessions': sessions_data
         })
     
     except Exception as e:
