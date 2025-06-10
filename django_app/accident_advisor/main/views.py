@@ -2,6 +2,7 @@
 메인 채팅 페이지 뷰 (리더 담당)
 
 이 파일은 메인 채팅 인터페이스와 AI 연동을 담당합니다.
+메모리 시스템을 활용하여 대화 맥락을 기억하고 개인화된 응답을 제공합니다.
 """
 
 from django.shortcuts import render
@@ -9,9 +10,15 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
-from core.models import User, ChatSession, ChatMessage, AccidentCase
+from core.models import User, ChatSession, ChatMessage
+from .services.ai_classifier import process_user_query
+from .utils.memory_system import process_with_memory, record_ai_response, get_session_insights, get_context_enhanced_query
 import json
 import uuid
+import logging
+
+# 로거 설정
+logger = logging.getLogger(__name__)
 
 
 def index(request):
@@ -40,10 +47,10 @@ def index(request):
 @require_http_methods(["POST"])
 def send_message(request):
     """
-    메시지 전송 API
+    메시지 전송 API (메모리 시스템 통합)
     - 사용자 메시지 저장
-    - AI 응답 생성 (나중에 구현)
-    - 응답 반환
+    - 대화 맥락을 기억하는 AI 응답 생성
+    - 개인화된 응답 반환
     """
     try:
         data = json.loads(request.body)
@@ -69,8 +76,15 @@ def send_message(request):
             content=user_message
         )
         
-        # AI 응답 생성 (현재는 임시 응답)
-        bot_response = generate_bot_response(user_message)
+        # 사용자 ID 추출 (익명 사용자도 세션으로 추적)
+        user_id = str(request.user.id) if request.user.is_authenticated else None
+        
+        # 메모리 시스템을 활용한 AI 응답 생성
+        bot_response, memory_insights = generate_bot_response_with_unified_memory(
+            user_message, 
+            str(session.session_id), 
+            user_id
+        )
         
         # 봇 응답 저장
         bot_msg = ChatMessage.objects.create(
@@ -83,18 +97,20 @@ def send_message(request):
         session.message_count = session.messages.count()
         session.save()
         
-        # 응답 데이터
+        # 응답 데이터 (메모리 인사이트 포함)
         response_data = {
             'success': True,
             'session_id': str(session.session_id),
             'user_message': user_message,
             'bot_response': bot_response,
             'session_title': session.title,
+            'memory_insights': memory_insights,  # 메모리 기반 인사이트
         }
         
         return JsonResponse(response_data)
     
     except Exception as e:
+        logger.error(f"메시지 처리 중 오류: {str(e)}")
         return JsonResponse({'error': f'오류가 발생했습니다: {str(e)}'}, status=500)
 
 
@@ -112,71 +128,61 @@ def create_new_session(user, first_message):
     return session
 
 
-def generate_bot_response(user_message):
+def generate_bot_response_with_unified_memory(user_message, session_id, user_id=None):
     """
-    AI 봇 응답 생성 (현재는 임시 구현)
+    ✅ 개선된 통합 메모리 시스템 활용 AI 봇 응답 생성 (P0-2)
     
-    TODO: 나중에 리더가 RAG + 파인튜닝 모델과 연동
+    메모리 이중 호출 문제 해결 및 맥락 인식 강화
     """
-    # 키워드 기반 간단한 응답 (임시)
-    user_message_lower = user_message.lower()
-    
-    if any(word in user_message_lower for word in ['교차로', '좌회전', '직진']):
-        return """교차로에서의 좌회전 사고의 경우, 일반적으로 좌회전 차량(A)의 과실비율이 70%, 직진 차량(B)의 과실비율이 30%입니다.
+    try:
+        # ✅ 단일 메모리 호출로 통합 처리
+        result = process_user_query_with_memory(user_message, session_id, user_id)
+        
+        ai_response = result['response']
+        memory_insights = result.get('memory_insights', {})
+        category = result.get('category', 'general')
+        
+        # ✅ 맥락 인식 정보 추가 (메모리에서 자동 처리)
+        context_info = memory_insights.get('conversation_context', {})
+        if context_info.get('followup_info', {}).get('has_followup'):
+            confidence = context_info['followup_info'].get('confidence', 0.0)
+            if confidence > 0.5:
+                context_note = f"\n\n💡 **맥락 인식**: 이전 대화와 연관된 질문으로 이해하고 답변드렸습니다. (신뢰도: {confidence:.1f})"
+                ai_response = ai_response + context_note
+        
+        logger.info(f"통합 메모리 처리 완료: '{user_message[:50]}...' → {category}")
+        
+        return ai_response, memory_insights
+            
+    except Exception as e:
+        logger.error(f"통합 메모리 응답 생성 중 오류: {str(e)}")
+        fallback_response = generate_fallback_response(user_message)
+        return fallback_response, {}
 
-**법적 근거**: 도로교통법 제25조 (교차로 통행방법)
 
-**조정 요소**:
-- 신호위반 시: 추가 과실 +20%
-- 속도위반 시: 추가 과실 +10%
-- 안전운전 의무 위반 시: 과실 조정 가능
+def generate_fallback_response(user_message):
+    """폴백 응답 (AI 시스템 오류 시)"""
+    return """❌ **일시적 오류 발생**
 
-더 정확한 분석을 위해서는 구체적인 사고 상황을 알려주시기 바랍니다."""
-    
-    elif any(word in user_message_lower for word in ['주차장', '주차', '접촉']):
-        return """주차장 내 접촉사고의 경우, 일반적으로 움직이는 차량의 과실비율이 더 높습니다.
+죄송합니다. 일시적으로 AI 분류 시스템에 문제가 발생했습니다.
+잠시 후 다시 시도해주시거나, 구체적인 교통사고 상황을 자세히 설명해주시면 도움을 드리겠습니다.
 
-**기본 과실비율**:
-- 후진 차량 vs 정지 차량: 후진 차량 100%
-- 서로 움직이는 경우: 50% : 50%
+**문의 예시**:
+- "교차로에서 좌회전 중 사고가 났어요"
+- "주차장에서 접촉사고가 발생했어요"
+- "대법원 판례를 검색해주세요"
+- "도로교통법 조문을 알려주세요"
 
-**법적 근거**: 도로교통법 제27조 (후진의 금지)
-
-구체적인 상황을 알려주시면 더 정확한 과실비율을 안내해드리겠습니다."""
-    
-    elif any(word in user_message_lower for word in ['신호위반', '신호', '적색']):
-        return """신호위반 사고의 경우 위반 차량의 과실비율이 매우 높습니다.
-
-**기본 과실비율**:
-- 신호위반 차량: 90-100%
-- 정상 신호 차량: 0-10%
-
-**법적 근거**: 도로교통법 제5조 (신호 등에 따른 통행)
-
-신호위반은 중대한 교통법규 위반으로 과실비율이 크게 증가합니다."""
-    
-    else:
-        return """안녕하세요! 교통사고 과실비율 상담 챗봇 '노느'입니다.
-
-구체적인 사고 상황을 알려주시면 관련 법률과 판례를 바탕으로 과실비율을 분석해드리겠습니다.
-
-**예시 질문**:
-- "교차로에서 좌회전하다가 직진차와 충돌했어요"
-- "주차장에서 후진하다가 다른 차와 접촉했어요"
-- "신호위반 차량과 사고가 났어요"
-
-어떤 상황인지 자세히 설명해주세요!"""
-    
-    return response
+**다시 시도해주시면 정상적인 AI 응답을 받으실 수 있습니다.**"""
 
 
 @require_http_methods(["GET"])
-def get_chat_history(request, session_id):
-    """특정 세션의 채팅 기록 가져오기"""
+def get_chat_history_with_insights(request, session_id):
+    """✅ 개선된 채팅 기록 조회 (상세 메모리 인사이트 포함)"""
     try:
         session = ChatSession.objects.get(session_id=session_id)
         
-        # 권한 확인 (로그인한 사용자만 자신의 세션 조회 가능)
+        # 권한 확인
         if session.user and session.user != request.user:
             return JsonResponse({'error': '접근 권한이 없습니다.'}, status=403)
         
@@ -190,16 +196,91 @@ def get_chat_history(request, session_id):
                 'timestamp': msg.created_at.strftime('%Y-%m-%d %H:%M:%S')
             })
         
+        # ✅ 상세 메모리 인사이트 조회
+        memory_insights = get_session_insights(session_id) or {}
+        
+        # ✅ 사용자 맞춤 추천 생성
+        recommendations = []
+        context_info = memory_insights.get('conversation_context', {})
+        usage_pattern = memory_insights.get('usage_pattern', {})
+        
+        # 미사용 카테고리 추천
+        if usage_pattern:
+            used_categories = set(usage_pattern.get('category_distribution', {}).keys())
+            all_categories = {'accident', 'precedent', 'law', 'term', 'general'}
+            unused_categories = all_categories - used_categories
+            
+            category_suggestions = {
+                'accident': '교통사고 상황을 입력해서 과실비율을 분석해보세요',
+                'precedent': '구체적인 사건번호로 판례를 검색해보세요',
+                'law': '도로교통법 조문을 조회해보세요',
+                'term': '궁금한 법률 용어를 질문해보세요'
+            }
+            
+            for category in list(unused_categories)[:2]:  # 최대 2개
+                if category in category_suggestions:
+                    recommendations.append(category_suggestions[category])
+        
+        # 맥락 기반 추천
+        current_topic = context_info.get('current_topic')
+        if current_topic == 'accident' and context_info.get('accident_details'):
+            recommendations.append('관련 판례나 법률 조문도 함께 확인해보세요')
+        elif current_topic == 'precedent':
+            recommendations.append('유사한 사고 상황으로 과실비율도 분석해보세요')
+        
         return JsonResponse({
             'success': True,
             'session_title': session.title,
-            'messages': messages_data
+            'messages': messages_data,
+            'memory_insights': memory_insights,
+            'recommendations': recommendations[:3],  # 최대 3개
+            'session_stats': {
+                'total_messages': len(messages_data),
+                'session_duration': str(memory_insights.get('activity_pattern', {}).get('session_duration', '0')),
+                'user_expertise': memory_insights.get('user_level', {}).get('user_expertise', 'newcomer')
+            }
         })
-    
+        
     except ChatSession.DoesNotExist:
         return JsonResponse({'error': '세션을 찾을 수 없습니다.'}, status=404)
     except Exception as e:
-        return JsonResponse({'error': f'오류가 발생했습니다: {str(e)}'}, status=500)
+        logger.error(f"채팅 기록 조회 중 오류: {str(e)}")
+        return JsonResponse({'error': '채팅 기록을 불러오는 중 오류가 발생했습니다.'}, status=500)
+
+
+@require_http_methods(["GET"])  
+def get_session_analytics(request, session_id):
+    """✅ 새로운 세션 분석 정보 조회"""
+    try:
+        # 메모리 시스템에서 상세 분석 정보 조회
+        analytics = get_user_session_insights(session_id)
+        
+        if not analytics:
+            return JsonResponse({'error': '세션을 찾을 수 없습니다.'}, status=404)
+        
+        # 분석 정보 구성
+        response_data = {
+            'session_id': session_id,
+            'basic_info': {
+                'total_interactions': analytics.get('total_interactions', 0),
+                'session_age': analytics.get('session_age', '0'),
+                'last_activity': analytics.get('last_activity', 'Unknown')
+            },
+            'usage_patterns': analytics.get('usage_pattern', {}),
+            'conversation_context': analytics.get('conversation_context', {}),
+            'learning_progress': analytics.get('learning_progress', {}),
+            'user_level': analytics.get('user_level', {}),
+            'recommendations': analytics.get('recommendations', [])
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'analytics': response_data
+        })
+        
+    except Exception as e:
+        logger.error(f"세션 분석 조회 중 오류: {str(e)}")
+        return JsonResponse({'error': '분석 정보를 불러오는 중 오류가 발생했습니다.'}, status=500)
 
 
 @csrf_exempt
@@ -214,6 +295,25 @@ def new_chat(request):
             'success': True,
             'session_id': new_session_id,
             'message': '새로운 상담을 시작합니다!'
+        })
+    
+    except Exception as e:
+        return JsonResponse({'error': f'오류가 발생했습니다: {str(e)}'}, status=500)
+
+
+@require_http_methods(["GET"])  
+def get_session_statistics(request, session_id):
+    """세션 통계 및 메모리 인사이트 조회 (디버깅용)"""
+    try:
+        memory_insights = get_session_insights(session_id)
+        
+        if not memory_insights:
+            return JsonResponse({'error': '세션을 찾을 수 없습니다.'}, status=404)
+        
+        return JsonResponse({
+            'success': True,
+            'session_id': session_id,
+            'insights': memory_insights
         })
     
     except Exception as e:
