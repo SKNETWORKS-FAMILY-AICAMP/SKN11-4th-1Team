@@ -31,3 +31,57 @@ python-decouple==3.8
 
 # 기타 유틸리티
 requests==2.31.0
+
+# Django 웹 프레임워크
+djangorestframework==3.14.0
+
+# 환경변수 관리
+python-dotenv==1.0.0
+
+# 이미지 처리 (프로필 이미지 등)
+Pillow==10.0.0
+
+# AI 및 LangChain (리더 작업용)
+langchain==0.3.7
+langchain-openai==0.2.8
+langchain-chroma==0.1.4
+langchain-community==0.3.7
+
+# OpenAI
+openai>=1.54.0,<2.0.0
+
+# 벡터 DB
+chromadb==0.5.20
+
+# 임베딩 및 NLP
+sentence-transformers==3.3.1
+numpy==1.26.4
+
+# 기타 유틸리티
+requests==2.31.0
+pathlib2==2.3.7
+
+# 개발 도구 (선택사항)
+jupyter==1.0.0
+ipython==8.18.1
+
+# 한국어 지원
+django-extensions==3.2.3
+
+# 개발 도구 (개발 환경에서만 사용)
+django-debug-toolbar==4.2.0
+
+# ✅ WebSocket 지원 추가
+channels==4.2.2
+channels-redis==4.2.1
+
+# ✅ ASGI 서버 (WebSocket 지원)
+uvicorn[standard]==0.32.1
+daphne==4.1.2
+
+# ✅ 비동기 처리 지원
+asgiref==3.8.1
+
+# ✅ 웹소켓 및 실시간 통신
+websockets==13.1
+
