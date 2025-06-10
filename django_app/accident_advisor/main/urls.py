@@ -13,6 +13,6 @@ urlpatterns = [
     
     # API 엔드포인트들
     path('api/send-message/', views.send_message, name='send_message'),
-    path('api/chat-history/<str:session_id>/', views.get_chat_history, name='chat_history'),
+    path('api/chat-history/<str:session_id>/', views.get_chat_history_with_insights, name='chat_history'),
     path('api/new-chat/', views.new_chat, name='new_chat'),
 ]
