@@ -21,13 +21,22 @@
 
     <div class="form-group">
       <label for="{{ form.nickname.id_for_label }}">닉네임</label>
+      
       {{ form.nickname }}
       {% if form.nickname.errors %}
         <div class="form-error">{{ form.nickname.errors|striptags }}</div>
       {% endif %}
     </div>
 
-      <div class="form-group">
+          <div class="form-group">
+        <label for="{{ form.email.id_for_label }}">이메일</label>
+        {{ form.email }}
+        {% if form.email.errors %}
+          <div class="form-error">{{ form.email.errors|striptags }}</div>
+        {% endif %}
+      </div>
+
+          <div class="form-group">
         <label for="{{ form.profile_image.id_for_label }}">프로필 이미지</label><br>
 
       {% if user.profile_image %}
