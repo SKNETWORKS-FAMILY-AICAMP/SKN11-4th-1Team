@@ -475,11 +475,11 @@
         {% if user.is_authenticated %}
         <div class="sidebar-user-info">
           <div class="sidebar-user-avatar">
-            {{ user.display_name|first|upper }}
+            {{ user.username|first|upper }}
           </div>
           <div class="sidebar-user-details">
-            <h6>{{ user.display_name }}</h6>
-            <small>로그인 상태</small>
+            <h6>{{ user.nickname }}</h6>
+            <small>{{ user.username }}</small>
           </div>
         </div>
         <div class="sidebar-user-actions">
