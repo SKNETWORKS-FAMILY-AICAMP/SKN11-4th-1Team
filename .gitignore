@@ -8,6 +8,8 @@
 data/*/split/
 chroma_db/
 vector_db/
+django_app/accident_advisor/vector_db/
+django_app/accident_advisor/db.sqlite3
 **/migrations/
 .DS_Store
 ##########
