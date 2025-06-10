@@ -21,12 +21,27 @@ class MainConfig(AppConfig):
         skip_commands = ['migrate', 'makemigrations', 'collectstatic', 'createsuperuser', 'shell', 'test', 'initialize_vectordb']
         
         if any(cmd in sys.argv for cmd in skip_commands):
+            print(f"🚫 [VectorDB] 스킵: {' '.join(sys.argv)} 명령어 실행 중")
+            return
+        
+        # uvicorn 또는 runserver 실행 시에만 초기화
+        is_server_start = (
+            'uvicorn' in sys.argv[0] or  # uvicorn 실행
+            'runserver' in sys.argv or   # Django runserver
+            'asgi:application' in ' '.join(sys.argv)  # ASGI 애플리케이션
+        )
+        
+        if not is_server_start:
+            print(f"🚫 [VectorDB] 서버 실행이 아닙니다: {' '.join(sys.argv)}")
+            return
+        
+        # runserver의 경우 RUN_MAIN 체크 (중복 실행 방지)
+        if 'runserver' in sys.argv and os.environ.get('RUN_MAIN') != 'true':
+            print("🚫 [VectorDB] runserver 리로드 중복 실행 방지")
             return
             
-        # RUN_MAIN 환경변수로 개발 서버의 리로드 중복 실행 방지
-        if os.environ.get('RUN_MAIN') != 'true':
-            return
-            
+        print("🎯 [VectorDB] 서버 시작 감지, 자동 초기화 시작...")
+        
         # VectorDB 자동 초기화 실행
         self._auto_initialize_vectordb()
 
@@ -76,6 +91,7 @@ class MainConfig(AppConfig):
                         return
                 except Exception as e:
                     print(f"⚠️ [VectorDB] 기존 상태 확인 실패: {e}")
+                    print("새로 생성합니다...")
             
             # VectorDB 초기화 실행 (management command와 동일한 함수 호출)
             if force_rebuild:
