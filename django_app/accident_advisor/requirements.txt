@@ -71,9 +71,10 @@ django-extensions==3.2.3
 # 개발 도구 (개발 환경에서만 사용)
 django-debug-toolbar==4.2.0
 
-# ✅ WebSocket 지원 추가
+# ✅ WebSocket 지원 (호환 버전으로 수정)
 channels==4.2.2
 channels-redis==4.2.1
+websockets==10.4  # 13.1 → 10.4로 변경
 
 # ✅ ASGI 서버 (WebSocket 지원)
 uvicorn[standard]==0.32.1
