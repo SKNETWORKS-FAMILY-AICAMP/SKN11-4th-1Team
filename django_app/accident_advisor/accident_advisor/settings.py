@@ -186,6 +186,12 @@ METADATA_PATH = BASE_DIR / 'metadata'
 # Vector DB 저장 경로
 VECTOR_DB_PATH = BASE_DIR / 'vector_db'
 
+# 서버 시작 시 VectorDB 자동 초기화 여부 (개발 환경에서만 권장)
+AUTO_INITIALIZE_VECTORDB = os.getenv('AUTO_INITIALIZE_VECTORDB', 'True').lower() == 'true'
+
+# VectorDB 강제 재생성 여부 (기본값: False)
+FORCE_REBUILD_VECTORDB = os.getenv('FORCE_REBUILD_VECTORDB', 'False').lower() == 'true'
+
 # =============================================================================
 # Django 로깅 설정
 # =============================================================================
