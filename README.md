@@ -1,4 +1,4 @@
-# SKN11-3rd-1Team
+# SKN11-4th-1Team
 
 <br/>
 
@@ -95,6 +95,7 @@
 | Development | ![VS Code](https://img.shields.io/badge/VS%20Code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white) |
 | Embedding Model | ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white) ![Hugging Face](https://img.shields.io/badge/HuggingFace-FFD21F?style=for-the-badge&logo=huggingface&logoColor=black) |
 | Vector DB | ![ChromaDB](https://img.shields.io/badge/ChromaDB-3E5F8A?style=for-the-badge&logo=databricks&logoColor=white) |
+| Database | ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white) |
 | LLM Model | ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white) |
 | Framework | ![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white) ![LangChain](https://img.shields.io/badge/LangChain-F9A825?style=for-the-badge&logoColor=white)|
 | Deployment | ![AWS EC2](https://img.shields.io/badge/AWS%20EC2-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white) |
@@ -113,12 +114,12 @@
 # 7. 시스템 워크플로우
 
 
-![image.png](./img/systemworkflow.png)
+![image.png](./img/systemworkflow.jpg)
 
 
 <br/><br/>
 
-# 화면 정의서
+# [화면 정의서🔗](./output/screen%20definition.pdf)
 
 ## `Main 채팅 화면` ##
 ![image.png](./img/chat.png)
@@ -129,17 +130,25 @@
 ## `logout 화면` ##
 ![image.png](./img/logout.png)
 
-## `password reset 화면` ##
-![image.png](./img/password_reset.png)
+## `community 화면` ##
+![image.png](./img/community.png)
 
 ## `signup 화면` ##
 ![image.png](./img/signup.png)
 
+<br/><br/>
+
+# 12. 수행결과(테스트/시연 페이지)
+
+`Image 클릭 시 AWS 배포 port번호로 이동`
+
+[![image.png](./img/수행결과.png)](http://13.209.185.18:8888/)
+
+<br/><br/>
 
 # 10. 테스트 계획 및 결과 보고서
 
 ## 사용자 관리 페이지
-![image.png](./img/result_user1.png)
 ![image.png](./img/result_user2.png)
 ![image.png](./img/result_user3.png)
 ![image.png](./img/result_user4.png)
@@ -155,17 +164,7 @@
 
 <br/><br/>
 
-
-
-# 12. 수행결과(테스트/시연 페이지)
-
-
-![image.png](./img/수행결과.png)
-
-
-<br/><br/>
-
-# 11. 3차 프로젝트 대비 개선점
+# 11. 3차 프로젝트 대비 개선사항
 | 번호 | 항목명                           | 설명                                                                                                    |
 |------|----------------------------------|---------------------------------------------------------------------------------------------------------|
 | 1    | ☁️ 클라우드 인프라 확장          | AWS 클라우드 인프라(E2C, RDS 등) 기반으로 시스템을 분리 및 확장.                                      |
