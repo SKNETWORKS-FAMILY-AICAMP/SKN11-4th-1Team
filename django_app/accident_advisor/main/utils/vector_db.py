@@ -23,20 +23,20 @@ class VectorDBManager:
     ui.py의 VectorDB 로직을 Django에 맞게 이식 (최신 langchain-chroma 0.1.4)
     """
     
-    # 벡터DB 컬렉션 이름 정의 (modifier 제외)
+    # 벡터DB 컬렉션 이름 정의 (실제 생성된 컬렉션명과 일치)
     VECTOR_DB_COLLECTION = {
         'TERM': "term",
-        'TRAFFIC_LAW': "traffic_law_rag", 
-        'CAR_CASE': "car_case",
-        'PRECEDENT': "precedent",
+        'TRAFFIC_LAW_RAG': "traffic_law_rag",  # traffic_law_rag.json에서 생성
+        'CAR_CASE': "car_case",               # car_to_car.json에서 생성
+        'PRECEDENT': "precedent",             # precedent.json에서 생성
     }
     
-    # 단축 별칭 (modifier 제외)
+    # 카테고리별 컬렉션 매핑 (ai_classifier.py에서 사용)
     COLLECTIONS = {
-        'term': 'term',
-        'law': 'traffic_law_rag',
-        'car_case': 'car_case',     # car_to_car만 포함 (modifier 제외)
-        'precedent': 'precedent',
+        'term': 'term',                       # 용어 설명
+        'law': 'traffic_law_rag',            # 도로교통법 (traffic_law_rag.json)
+        'car_case': 'car_case',              # 교통사고 사례 (car_to_car.json)
+        'precedent': 'precedent',            # 판례 (precedent.json)
     }
     
     def __init__(self, vector_db_path: str = None, embedding_model_name: str = 'text-embedding-3-large'):
@@ -75,10 +75,11 @@ class VectorDBManager:
         self._collection_cache = {}
         
         logger.info(f"VectorDBManager 초기화 완료 - 경로: {self.vector_db_path}")
+        logger.info(f"지원 컬렉션: {list(self.COLLECTIONS.keys())} → {list(self.COLLECTIONS.values())}")
     
     def docs_to_chroma_db(self, docs: List[Document], collection_name: str) -> Chroma:
         """
-        Document를 ChromaDB에 저장/로드 (최신 langchain-chroma 방식)
+        Document를 ChromaDB에 저장/로드 (배치 처리로 토큰 제한 해결)
         
         Args:
             docs: 저장할 Document 리스트
@@ -119,17 +120,41 @@ class VectorDBManager:
                 if not docs:
                     raise ValueError(f"문서가 없어서 컬렉션 '{collection_name}'을 생성할 수 없습니다.")
                 
-                # 최신 방식으로 임베딩 후 컬렉션 생성 및 저장
-                vectorstore = Chroma.from_documents(
-                    documents=docs,
-                    embedding=self.embedding_model,
-                    persist_directory=str(self.vector_db_path),
-                    collection_name=collection_name
-                )
+                # 🔧 배치 처리로 대용량 데이터 처리 (토큰 제한 해결)
+                batch_size = 50  # 배치 크기 (토큰 제한에 맞게 조정)
+                total_docs = len(docs)
+                
+                if total_docs <= batch_size:
+                    # 작은 데이터는 기존 방식 사용
+                    vectorstore = Chroma.from_documents(
+                        documents=docs,
+                        embedding=self.embedding_model,
+                        persist_directory=str(self.vector_db_path),
+                        collection_name=collection_name
+                    )
+                else:
+                    # 대용량 데이터는 배치 처리
+                    logger.info(f"대용량 데이터 ({total_docs}개) 배치 처리 시작 - 배치 크기: {batch_size}")
+                    
+                    # 첫 번째 배치로 컬렉션 생성
+                    first_batch = docs[:batch_size]
+                    vectorstore = Chroma.from_documents(
+                        documents=first_batch,
+                        embedding=self.embedding_model,
+                        persist_directory=str(self.vector_db_path),
+                        collection_name=collection_name
+                    )
+                    logger.info(f"첫 번째 배치 완료: {len(first_batch)}개 문서")
+                    
+                    # 나머지 배치들을 순차적으로 추가
+                    for i in range(batch_size, total_docs, batch_size):
+                        batch = docs[i:i + batch_size]
+                        vectorstore.add_documents(batch)
+                        logger.info(f"배치 {i//batch_size + 1} 완료: {len(batch)}개 문서 추가 ({i + len(batch)}/{total_docs})")
                 
                 # 캐시에 저장
                 self._collection_cache[collection_name] = vectorstore
-                logger.info(f"컬렉션 '{collection_name}' 생성 완료 - 문서 수: {len(docs)}")
+                logger.info(f"컬렉션 '{collection_name}' 생성 완료 - 총 문서 수: {total_docs}")
                 return vectorstore
                 
         except Exception as e:
@@ -208,7 +233,9 @@ class VectorDBManager:
                     logger.warning(f"카테고리 '{category}'에 문서가 없습니다. 건너뛰기.")
                     continue
                 
+                # 카테고리별 컬렉션명 매핑
                 collection_name = self.COLLECTIONS.get(category, category)
+                logger.info(f"카테고리 '{category}' → 컬렉션 '{collection_name}' 매핑")
                 
                 # 기존 컬렉션 확인
                 if not force_rebuild:
@@ -318,6 +345,28 @@ class VectorDBManager:
             stats['error'] = str(e)
         
         return stats
+    
+    def get_collection_as_vectorstore(self, collection_name: str) -> Optional[Chroma]:
+        """
+        Self-Query Retriever에서 사용할 수 있도록 VectorStore 인스턴스 반환
+        
+        Args:
+            collection_name: 컬렉션 이름
+            
+        Returns:
+            Chroma: ChromaDB VectorStore 인스턴스 (없으면 None)
+        """
+        try:
+            vector_db = self.get_vector_db(collection_name)
+            if vector_db:
+                logger.info(f"VectorStore 로드 성공: {collection_name}")
+                return vector_db
+            else:
+                logger.warning(f"VectorStore를 찾을 수 없음: {collection_name}")
+                return None
+        except Exception as e:
+            logger.error(f"VectorStore 로드 실패 ({collection_name}): {str(e)}")
+            return None
     
     def clear_cache(self):
         """컬렉션 캐시 초기화"""

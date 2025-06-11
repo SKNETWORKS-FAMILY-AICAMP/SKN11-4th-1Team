@@ -266,6 +266,65 @@
       opacity: 0.6;
     }
   }
+
+  /* ✅ 메모리 인사이트 스타일 */
+  .memory-insights {
+    animation: slideInUp 0.3s ease-out;
+  }
+
+  .memory-item {
+    padding: 6px 0;
+    font-size: 14px;
+    color: var(--text-primary);
+    border-left: 3px solid var(--primary-color);
+    padding-left: 12px;
+    margin: 4px 0;
+    background: rgba(255, 107, 53, 0.05);
+    border-radius: 0 8px 8px 0;
+  }
+
+  /* ✅ 추천 패널 스타일 */
+  .recommendations-panel {
+    animation: slideInUp 0.3s ease-out;
+  }
+
+  .recommendation-item {
+    padding: 10px 14px;
+    background: white;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .recommendation-item:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+  }
+
+  .recommendation-item:last-child {
+    margin-bottom: 0;
+  }
+
+  @keyframes slideInUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
 </style>
 {% endblock %} {% block content %}
 <div class="chat-container">
@@ -294,12 +353,12 @@
         <div class="col-md-6 mb-3">
           <div
             class="card example-card"
-            onclick="sendExampleMessage('신호등이 있는 교차로에서 제가 좌회전하려는데 맞은편에서 직진해오던 차와 부딪혔어요. 제가 좌회전 신호를 확인하고 들어갔는데 상대방이 과속으로 와서 충돌했습니다.')"
+            onclick="sendExampleMessage('교차로에서 녹색신호로 직진하는데 빨간불 무시하고 직진하는 차와 충돌했어')"
           >
             <div class="card-body text-start">
               <h6 class="card-title">🚗 사고 상황 분석</h6>
               <p class="card-text small">
-                교차로 좌회전 중 직진차와 충돌 - 과실비율 분석
+                교차로 직진 중 빨간불 무시하고 직진하는 차와 충돌 - 과실비율 분석
               </p>
             </div>
           </div>
@@ -309,12 +368,12 @@
         <div class="col-md-6 mb-3">
           <div
             class="card example-card"
-            onclick="sendExampleMessage('대법원 2019다12345 판례를 찾아주세요')"
+            onclick="sendExampleMessage('대법원 92도2077 판례를 찾아주세요')"
           >
             <div class="card-body text-start">
               <h6 class="card-title">⚖️ 판례 검색</h6>
               <p class="card-text small">
-                사건번호로 법원 판례 검색 및 상세 내용 확인
+                대법원 92도2077 판례를 찾아주세요
               </p>
             </div>
           </div>
@@ -324,12 +383,12 @@
         <div class="col-md-6 mb-3">
           <div
             class="card example-card"
-            onclick="sendExampleMessage('도로교통법 제25조에 대해 알려주세요')"
+            onclick="sendExampleMessage('도로교통법 제11조에 대해 알려주세요')"
           >
             <div class="card-body text-start">
               <h6 class="card-title">📚 법률 조회</h6>
               <p class="card-text small">
-                도로교통법 조문 내용 및 적용 사례 안내
+                도로교통법 제11조에 대해 알려주세요
               </p>
             </div>
           </div>
@@ -352,6 +411,31 @@
       </div>
     </div>
   </div>
+
+  <!-- 메모리 인사이트 표시 영역 -->
+  <div class="memory-insights" id="memoryInsights" style="display: none;">
+    <div class="alert alert-info border-0 bg-gradient" style="background: linear-gradient(45deg, rgba(255, 107, 53, 0.1), rgba(54, 162, 235, 0.1)); border-radius: 12px; margin: 16px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-brain text-primary me-2" style="font-size: 1.2em;"></i>
+        <strong>💡 AI 메모리 인사이트</strong>
+      </div>
+      <div id="memoryContent" class="mt-2"></div>
+    </div>
+  </div>
+
+  <!-- 실시간 추천 패널 (비활성화) -->
+  <!-- 
+  <div class="recommendations-panel" id="recommendationsPanel" style="display: none; margin: 16px 24px;">
+    <div class="card border-0 shadow-sm" style="border-radius: 12px; background: linear-gradient(45deg, rgba(255, 193, 7, 0.05), rgba(40, 167, 69, 0.05));">
+      <div class="card-body">
+        <h6 class="card-title text-warning d-flex align-items-center">
+          <i class="bi bi-lightbulb-fill me-2"></i> 맞춤 추천
+        </h6>
+        <div id="recommendationsList"></div>
+      </div>
+    </div>
+  </div>
+  -->
 
   <!-- 메시지 입력 영역 -->
   <div class="chat-input-area">
@@ -426,29 +510,47 @@
         session_id: currentSessionId,
       }),
       contentType: "application/json",
+      timeout: 60000,  // 타임아웃 60초로 증가
       success: function (response) {
-        if (response.success) {
-          // 대기 메시지 제거
-          $(".message.bot:last").remove();
+      if (response.success) {
+      // 대기 메시지 제거
+      $(".message.bot:last").remove();
 
-          // 봇 응답 표시 (마크다운 렌더링)
-          addMessage(response.bot_response, "bot");
+      // 봇 응답 표시 (마크다운 렌더링)
+      addMessage(response.bot_response, "bot");
 
-          // 세션 ID 업데이트
-          currentSessionId = response.session_id;
+      // 세션 ID 업데이트
+      currentSessionId = response.session_id;
+
+      // ✅ 메모리 인사이트 표시
+      if (response.memory_insights) {
+        displayMemoryInsights(response.memory_insights);
+      }
+
+      // ✅ 실시간 추천 로드 (비활성화)
+      // if (currentSessionId) {
+      //   loadLiveRecommendations(currentSessionId);
+      // }
 
           // 사이드바 채팅 기록 새로고침
-          if (typeof loadChatHistory === "function") {
-            loadChatHistory();
+            if (typeof loadChatHistory === "function") {
+              loadChatHistory();
+            }
+          } else {
+            $(".message.bot:last").remove();
+            addMessage("죄송합니다. 오류가 발생했습니다.", "bot");
           }
-        } else {
-          $(".message.bot:last").remove();
-          addMessage("죄송합니다. 오류가 발생했습니다.", "bot");
-        }
-      },
-      error: function () {
+        },
+      error: function (xhr, status, error) {
         $(".message.bot:last").remove();
-        addMessage("네트워크 오류가 발생했습니다.", "bot");
+        
+        if (status === 'timeout') {
+          addMessage("타임아웃이 발생했습니다. 잠시만 기다려주세요... 현재 처리 중인 요청이 많아 응답이 지연될 수 있습니다.", "bot");
+        } else if (xhr.status === 500) {
+          addMessage("서버 오류가 발생했습니다. AI 응답 생성 중 문제가 발생했습니다.", "bot");
+        } else {
+          addMessage("네트워크 오류가 발생했습니다. 다시 시도해주세요.", "bot");
+        }
       },
     });
   }
@@ -546,30 +648,30 @@
         <div class="row mt-4">
           <!-- 1. 교통사고 상황 분석 (accident 카테고리) -->
           <div class="col-md-6 mb-3">
-            <div class="card example-card" onclick="sendExampleMessage('신호등이 있는 교차로에서 제가 좌회전하려는데 맞은편에서 직진해오던 차와 부딪혔어요. 제가 좌회전 신호를 확인하고 들어갔는데 상대방이 과속으로 와서 충돌했습니다.')">
+            <div class="card example-card" onclick="sendExampleMessage('교차로에서 녹색신호로 직진하는데 빨간불 무시하고 직진하는 차와 충돌했어')">
               <div class="card-body text-start">
                 <h6 class="card-title">🚗 사고 상황 분석</h6>
-                <p class="card-text small">교차로 좌회전 중 직진차와 충돌 - 과실비율 분석</p>
+                <p class="card-text small">교차로 직진 중 빨간불 무시하고 직진하는 차와 충돌 - 과실비율 분석</p>
               </div>
             </div>
           </div>
           
           <!-- 2. 판례 검색 (precedent 카테고리) -->
           <div class="col-md-6 mb-3">
-            <div class="card example-card" onclick="sendExampleMessage('대법원 2019다12345 판례를 찾아주세요')">
+            <div class="card example-card" onclick="sendExampleMessage('대법원 92도2077 판례를 찾아주세요')">
               <div class="card-body text-start">
                 <h6 class="card-title">⚖️ 판례 검색</h6>
-                <p class="card-text small">사건번호로 법원 판례 검색 및 상세 내용 확인</p>
+                <p class="card-text small">대법원 92도2077 판례를 찾아주세요</p>
               </div>
             </div>
           </div>
           
           <!-- 3. 도로교통법 조회 (law 카테고리) -->
           <div class="col-md-6 mb-3">
-            <div class="card example-card" onclick="sendExampleMessage('도로교통법 제25조에 대해 알려주세요')">
+            <div class="card example-card" onclick="sendExampleMessage('도로교통법 제11조에 대해 알려주세요')">
               <div class="card-body text-start">
                 <h6 class="card-title">📚 법률 조회</h6>
-                <p class="card-text small">도로교통법 조문 내용 및 적용 사례 안내</p>
+                <p class="card-text small">도로교통법 제11조에 대해 알려주세요</p>
               </div>
             </div>
           </div>
@@ -621,7 +723,126 @@
     });
   }
 
+  // ✅ 메모리 인사이트 표시 함수
+  function displayMemoryInsights(insights) {
+    const memoryDiv = $("#memoryInsights");
+    const contentDiv = $("#memoryContent");
+    
+    let content = '';
+    
+    try {
+      // 연관 질문 정보
+      const context = insights.conversation_context || {};
+      const followup = context.followup_info || {};
+      
+      if (followup.has_followup && followup.confidence > 0.6) {
+        const confidence = Math.round(followup.confidence * 100);
+        content += `<div class="memory-item">🔗 이전 대화와 연관된 질문으로 이해했습니다 (정확도: ${confidence}%)</div>`;
+      }
+      
+      // 사용자 레벨 정보
+      const userLevel = insights.user_level || {};
+      if (userLevel.explanation_level) {
+        const levelNames = {
+          'beginner': '초보자',
+          'intermediate': '중급자', 
+          'advanced': '전문가'
+        };
+        const levelName = levelNames[userLevel.explanation_level] || '일반';
+        const interactionCount = userLevel.interaction_count || 0;
+        content += `<div class="memory-item">👤 현재 레벨: ${levelName} (상호작용 ${interactionCount}회)</div>`;
+      }
+      
+      // 학습 진행도
+      const learning = insights.learning_progress || {};
+      if (Object.keys(learning).length > 0) {
+        const avgProgress = Math.round(Object.values(learning).reduce((a, b) => a + b, 0) / Object.keys(learning).length * 100);
+        content += `<div class="memory-item">📚 전체 학습 진행도: ${avgProgress}%</div>`;
+      }
+      
+      // 숙련 분야
+      const usage = insights.usage_analytics || {};
+      if (usage.category_usage && Object.keys(usage.category_usage).length > 0) {
+        const topCategories = Object.entries(usage.category_usage)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 2)
+          .map(([cat, count]) => {
+            const categoryNames = {
+              'accident': '사고분석',
+              'precedent': '판례검색',
+              'law': '법률조회',
+              'term': '용어설명'
+            };
+            return categoryNames[cat] || cat;
+          });
+        
+        if (topCategories.length > 0) {
+          content += `<div class="memory-item">⭐ 주요 활용 분야: ${topCategories.join(', ')}</div>`;
+        }
+      }
+      
+      if (content) {
+        contentDiv.html(content);
+        memoryDiv.fadeIn(300);
+        
+        // 6초 후 자동 숨김
+        setTimeout(() => {
+          memoryDiv.fadeOut(300);
+        }, 6000);
+      }
+    } catch (error) {
+      console.warn('메모리 인사이트 표시 오류:', error);
+    }
+  }
+
+  // ✅ 실시간 추천 로드 함수
+  function loadLiveRecommendations(sessionId) {
+    if (!sessionId) return;
+    
+    $.ajax({
+      url: `{% url "main:live_recommendations" "dummy" %}`.replace("dummy", sessionId),
+      method: "GET",
+      success: function(response) {
+        if (response.success && response.recommendations && response.recommendations.length > 0) {
+          displayRecommendations(response.recommendations);
+        }
+      },
+      error: function(xhr, status, error) {
+        console.log('추천 로드 실패:', error);
+      }
+    });
+  }
+
+  // ✅ 추천 표시 함수
+  function displayRecommendations(recommendations) {
+    const panelDiv = $("#recommendationsPanel");
+    const listDiv = $("#recommendationsList");
+    
+    if (recommendations && recommendations.length > 0) {
+      const items = recommendations.map(rec => {
+        const escapedRec = rec.replace(/'/g, "\\'")
+                            .replace(/"/g, '&quot;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;');
+        return `<div class="recommendation-item" onclick="sendExampleMessage('${escapedRec}')">
+                  <i class="bi bi-lightbulb text-warning"></i>
+                  ${rec}
+                </div>`;
+      }).join('');
+      
+      listDiv.html(items);
+      panelDiv.slideDown(300);
+      
+      // 12초 후 자동 숨김
+      setTimeout(() => {
+        panelDiv.slideUp(300);
+      }, 12000);
+    }
+  }
+
   // 전역 함수로 등록 (base.html에서 호출할 수 있도록)
   window.loadSessionMessages = loadSessionMessages;
+  window.displayMemoryInsights = displayMemoryInsights;
+  window.loadLiveRecommendations = loadLiveRecommendations;
 </script>
 {% endblock %}

@@ -218,14 +218,28 @@ def get_collection_name(category: str) -> str:
     VectorDB 컬렉션 이름 조회 함수
     
     Args:
-        category (str): 카테고리 (TERM, PRECEDENT 등)
+        category (str): 카테고리 (소문자/대문자 모두 지원)
         
     Returns:
         str: 컬렉션 이름
         
     Example:
+        collection = get_collection_name('precedent')  # "precedent"
         collection = get_collection_name('PRECEDENT')  # "precedent"
     """
+    # 소문자 -> 대문자 변환 매핑
+    category_mapping = {
+        'precedent': 'PRECEDENT',
+        'law': 'TRAFFIC_LAW_RAG',  # 실제 컬렉션명 매핑
+        'term': 'TERM',
+        'accident': 'CAR_CASE',
+        'car_case': 'CAR_CASE'
+    }
+    
+    # 소문자로 입력된 경우 대문자로 변환
+    if category in category_mapping:
+        category = category_mapping[category]
+    
     return VECTOR_DB_COLLECTIONS.get(category, '')
 
 def is_valid_category(category: str) -> bool:

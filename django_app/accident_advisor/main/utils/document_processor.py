@@ -290,7 +290,11 @@ class DocumentProcessor:
         file_paths = {
             'term': metadata_path / 'term.json',
             'precedent': metadata_path / 'precedent.json',
-            'car_case': metadata_path / 'car_to_car.json',
+            'car_case': {
+                'car_to_car': metadata_path / 'car_to_car.json',
+                'car_to_mobility': metadata_path / 'car_to_mobility.json',
+                'car_to_pedestrian': metadata_path / 'car_to_pedestrian.json'
+            },
             'law': metadata_path / 'traffic_law_rag.json',
             # modifier.json은 VectorDB에 저장하지 않음 (프롬프트에서 직접 사용)
         }
@@ -307,9 +311,31 @@ class DocumentProcessor:
             precedent_data = cls.load_json(str(file_paths['precedent']))
             documents['precedent'] = cls.convert_precedent_to_docs(precedent_data)
             
-            # car_case 문서 (modifier 없이 car_to_car만)
-            car_case_data = cls.load_json(str(file_paths['car_case']))
-            documents['car_case'] = cls.convert_car_case_to_docs(car_case_data)
+            # car_case 문서 (3개 파일 통합)
+            car_case_docs = []
+            
+            # car_to_car.json
+            car_to_car_data = cls.load_json(str(file_paths['car_case']['car_to_car']))
+            car_to_car_docs = cls.convert_car_case_to_docs(car_to_car_data)
+            for doc in car_to_car_docs:
+                doc.metadata['source_file'] = 'car_to_car'
+            car_case_docs.extend(car_to_car_docs)
+            
+            # car_to_mobility.json
+            car_to_mobility_data = cls.load_json(str(file_paths['car_case']['car_to_mobility']))
+            car_to_mobility_docs = cls.convert_car_case_to_docs(car_to_mobility_data)
+            for doc in car_to_mobility_docs:
+                doc.metadata['source_file'] = 'car_to_mobility'
+            car_case_docs.extend(car_to_mobility_docs)
+            
+            # car_to_pedestrian.json
+            car_to_pedestrian_data = cls.load_json(str(file_paths['car_case']['car_to_pedestrian']))
+            car_to_pedestrian_docs = cls.convert_car_case_to_docs(car_to_pedestrian_data)
+            for doc in car_to_pedestrian_docs:
+                doc.metadata['source_file'] = 'car_to_pedestrian'
+            car_case_docs.extend(car_to_pedestrian_docs)
+            
+            documents['car_case'] = car_case_docs
             
             # law 문서 (도로교통법)
             law_data = cls.load_json(str(file_paths['law']))
@@ -342,15 +368,31 @@ class DocumentProcessor:
             if docs:
                 avg_length = sum(len(doc.page_content) for doc in docs) / doc_count
                 sample_metadata = docs[0].metadata.keys() if docs else []
+                
+                # car_case의 경우 소스 파일별 통계도 추가
+                if category == 'car_case':
+                    source_files = {}
+                    for doc in docs:
+                        source = doc.metadata.get('source_file', 'unknown')
+                        source_files[source] = source_files.get(source, 0) + 1
+                    stats[category] = {
+                        'document_count': doc_count,
+                        'avg_content_length': round(avg_length, 2),
+                        'metadata_fields': list(sample_metadata),
+                        'source_files': source_files
+                    }
+                else:
+                    stats[category] = {
+                        'document_count': doc_count,
+                        'avg_content_length': round(avg_length, 2),
+                        'metadata_fields': list(sample_metadata)
+                    }
             else:
-                avg_length = 0
-                sample_metadata = []
-            
-            stats[category] = {
-                'document_count': doc_count,
-                'avg_content_length': round(avg_length, 2),
-                'metadata_fields': list(sample_metadata)
-            }
+                stats[category] = {
+                    'document_count': 0,
+                    'avg_content_length': 0,
+                    'metadata_fields': []
+                }
         
         stats['total'] = {
             'total_documents': total_docs,

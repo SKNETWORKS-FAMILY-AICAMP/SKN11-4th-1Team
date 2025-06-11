@@ -147,15 +147,41 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 # =============================================================================
-# AI 및 분류 시스템 설정
+# 최적화된 AI 시스템 설정
 # =============================================================================
 
 # OpenAI API 설정
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 FINETUNED_MODEL_ID = os.getenv('FINETUNED_MODEL_ID')
 
-# 분류 시스템 설정
-CLASSIFICATION_TIMEOUT = int(os.getenv('CLASSIFICATION_TIMEOUT', '10'))
+# 최적화된 AI 시스템 사용 여부
+USE_OPTIMIZED_AI = os.getenv('USE_OPTIMIZED_AI', 'True').lower() == 'true'
+
+# 눆성능 설정
+AI_SYSTEM_CONFIG = {
+    # 대화 메모리 설정
+    'MEMORY_WINDOW_SIZE': int(os.getenv('AI_MEMORY_WINDOW', '8')),
+    'SESSION_TIMEOUT_HOURS': int(os.getenv('AI_SESSION_TIMEOUT', '24')),
+    'AUTO_CLEANUP_ENABLED': os.getenv('AI_AUTO_CLEANUP', 'True').lower() == 'true',
+    
+    # 분류 시스템 설정
+    'KEYWORD_CLASSIFICATION_THRESHOLD': float(os.getenv('AI_KEYWORD_THRESHOLD', '0.5')),
+    'CLASSIFICATION_TIMEOUT': int(os.getenv('AI_CLASSIFICATION_TIMEOUT', '5')),
+    
+    # RAG 시스템 설정
+    'RAG_MAX_DOCUMENTS': int(os.getenv('AI_RAG_MAX_DOCS', '2')),
+    'RAG_CONTENT_LIMIT': int(os.getenv('AI_RAG_CONTENT_LIMIT', '250')),
+    'RAG_CACHE_SIZE': int(os.getenv('AI_RAG_CACHE_SIZE', '100')),
+    
+    # LLM 설정
+    'LLM_MODEL': os.getenv('AI_LLM_MODEL', 'gpt-4o-mini'),
+    'LLM_TEMPERATURE': float(os.getenv('AI_LLM_TEMPERATURE', '0.3')),
+    'LLM_MAX_TOKENS': int(os.getenv('AI_LLM_MAX_TOKENS', '1500')),
+    'LLM_TIMEOUT': int(os.getenv('AI_LLM_TIMEOUT', '15')),
+}
+
+# 대체 분류 설정
+CLASSIFICATION_TIMEOUT = AI_SYSTEM_CONFIG['CLASSIFICATION_TIMEOUT']
 CLASSIFICATION_MAX_RETRIES = int(os.getenv('CLASSIFICATION_MAX_RETRIES', '3'))
 ENABLE_FALLBACK = os.getenv('ENABLE_FALLBACK', 'True').lower() == 'true'
 
@@ -168,13 +194,11 @@ SUPPORTED_CATEGORIES = [
     'general'      # 일반 질문
 ]
 
-# 분류 시스템 기본 설정
-CLASSIFICATION_SYSTEM_PROMPT = "분류: accident|precedent|law|term|general"
-
 # AI 로깅 설정
 AI_LOGGING_ENABLED = DEBUG
 AI_LOG_REQUESTS = DEBUG
 AI_LOG_RESPONSES = DEBUG
+AI_LOG_PERFORMANCE = os.getenv('AI_LOG_PERFORMANCE', 'True').lower() == 'true'
 
 # =============================================================================
 # Vector DB 및 메타데이터 경로 설정
@@ -217,6 +241,11 @@ LOGGING = {
         },
     },
     'loggers': {
+        'main.services.optimized_ai_bot': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
         'main.services.ai_classifier': {
             'handlers': ['console'],
             'level': 'INFO',

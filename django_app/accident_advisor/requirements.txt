@@ -84,5 +84,5 @@ daphne==4.1.2
 asgiref==3.8.1
 
 # ✅ 웹소켓 및 실시간 통신
-websockets==13.1
+# websockets==13.1
 

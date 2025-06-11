@@ -1,4 +1,4 @@
 # AI Services Package
-from .ai_classifier import TrafficAccidentClassifier, classify_user_query
+# ai_classifier 관련 import 제거됨
 
-__all__ = ['TrafficAccidentClassifier', 'classify_user_query']
+__all__ = []

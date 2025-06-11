@@ -27,6 +27,7 @@ $(document).ready(function() {
 
 // 공통 AJAX 설정
 $.ajaxSetup({
+    timeout: 60000,  // 전역 타임아웃 60초
     beforeSend: function(xhr, settings) {
         if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
