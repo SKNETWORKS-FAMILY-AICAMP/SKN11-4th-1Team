@@ -146,12 +146,7 @@
 
 <br/><br/>
 
-# 10. 테스트 계획 및 결과 보고서
-
-## 사용자 관리 페이지
-![image.png](./img/result_user2.png)
-![image.png](./img/result_user3.png)
-![image.png](./img/result_user4.png)
+# 10. [테스트 계획 및 결과 보고서🔗](./output/test_result_report.pdf)
 
 ## 메인 페이지
 ![image.png](./img/result_main.png)
