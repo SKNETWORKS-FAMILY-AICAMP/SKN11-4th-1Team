@@ -13,9 +13,6 @@
 | <img src="./img/성호진.png" width="120" height="120"/><br> | <img src="./img/신진슬.png" width="120" height="120"/><br> | <img src="./img/이채은.png" width="120" height="120"/><br> | <img src="./img/방성일.png" width="120" height="120"/><br> | <img src="./img/이선호.png" width="120" height="120"/><br> |
 
 
-
-
-
 <br/><br/>
 
 # 2. 프로젝트 개요
@@ -94,9 +91,9 @@
 
 | 카테고리 | 기술 스택 |
 |----------|------------|
-| Language | ![Python 3.9](https://img.shields.io/badge/Python-3.9-3776AB?style=for-the-badge&logo=python&logoColor=white) |
+| Language | ![Python 3.10](https://img.shields.io/badge/Python-3.10-3776AB?style=for-the-badge&logo=python&logoColor=white) |
 | Development | ![VS Code](https://img.shields.io/badge/VS%20Code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white) |
-| Embedding Model | ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white) ![Hugging Face](https://img.shields.io/badge/HuggingFace-FFD21F?style=for-the-badge&logo=huggingface&logoColor=black) |
+| Embedding Model | ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)|
 | Vector DB | ![ChromaDB](https://img.shields.io/badge/ChromaDB-3E5F8A?style=for-the-badge&logo=databricks&logoColor=white) |
 | Database | ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white) |
 | LLM Model | ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white) |
@@ -142,7 +139,7 @@
 
 `Image 클릭 시 AWS 배포 port번호로 이동`
 
-[![image.png](./img/수행결과.png)](http://13.209.185.18:8888/)
+[![image.png](./img/수행결과.png)](http://15.165.222.110:8080/)
 
 <br/><br/>
 
@@ -175,16 +172,24 @@
 
 ### 호진
 
-- 데이터 수집부터 전처리, LangChain, RAG, ChromaDB, Fine-Tuning 등 지금까지 배워왔던 부분을 종합적으로 적용해보며 수업 외 많은 경험을 할 수 있는 시간이었습니다. 특히, ‘판례’검색 케이스에서 Retriever가 벡터DB에 있는 사건케이스(고유값)에 해당하는 내용을 가져오지 못하는 문제를 해결하기 위해 다양한 시도를 하며 얻은 아이디어를 바탕으로 프로그램 전체적으로 정확성을 올리는 방향이 된 것 같아 좋은 경험이 되었습니다.
+- 이번 프로젝트에서는 웹 페이지를 구현하고 배포하는 부분에 비중을 두었다. 웹 part는 처음 접하는 부분이었는데, 만들고자 하는 페이지의 요구사항을 구체화하고 실제 구현 및 AWS 배포까지 이어지는 과정을 경험할 수 있었고, 무사히 프로젝트 마무리되어 좋은 경험이 되었다.
 
 ### 성일
 
-- 파인튜닝의 결과가 기대에 못미쳐 성취감이 부족하다. 돌이켜보면 데이터 전처리부터 모델 튜닝까지 수업시간에 배운 내용들을 활용할 수 있어 내가 부족한 부분이 어느 부분인지 짚어볼 수 있는 기회였던 것 같다.
+- 웹페이지 작성을 통해 html의 구조와 django, aws의 ec2 서버와 RDS를 사용해 보면서, 우리가 사용하는 웹페이지가 이런 과정을 통해 만들어지는구나 하고 새삼스럽게 감탄했다. 일을 하면서 실력이 부족해 끝내지 못하고 다른 분들에게 부탁 드린 것이 많았는데, 책임을 다하려면 기능의 구현에 어떤 에러가 발생할 수 있는지, 그렇다면 그 해결방안은 무엇인지 등을 사용 툴이 정해졌을 때 조사해보며 미리미리 준비하는 태도를 지녀야겠다. 
 
 ### 채은
 
-- 이번 프로젝트를 통해 AI의 판단 흐름을 구체적으로 설계함으로써 프롬프트 최적화의 중요성과 설계 전략을 깊이 있게 배울 수 있었습니다. 또한 벡터 DB 구축, 코사인 유사도 계산, RAG 기반 질의응답 등 다양한 LLM 응용 기법을 실습하며, 이론으로만 알던 개념을 복습할 수 있는 시간이었습니다.
+- 이번 4차 프로젝트에서는 Django를 이용해 사용자의 편의성과 접근성을 고려한 웹페이지를 구현했습니다. 또한 AWS를 활용해 실제 서비스로 배포하는 과정까지 직접 경험하며 개발부터 운영까지 전체적인 흐름을 이해할 수 있었습니다.
 
 ### 진슬
 
-- 이번 프로젝트를 통해 LangChain의 모듈화된 구조를 이해하고, 문서 기반 검색과 생성형 응답이 결합된 RAG 방식의 장점을 알게 되었습니다. 그리고 특히 사고 상황 유사도를 기반으로 유의미한 판례를 추출하여, 이를 GPT가 근거와 함께 판단하는 흐름이 인상 깊었습니다. 이번 프로젝트를 하면서 가장 많은 경험을 해본 것 같습니다.
+- 4차 프로젝트에서는 Django를 활용해 교통사고 과실비율 상담 챗봇 웹 페이지를 구축하고, 기능별 앱 분리와 템플릿 구조 설계를 통해 역할을 명확히 나눴다.
+커뮤니티 기능에서는 글쓰기, 댓글, 좋아요 구현뿐 아니라 Bootstrap 연동과 검색/페이징 기능을 적용해 사용자 편의성과 실용성을 높였다.
+또한 RAG 기반 과실비율 판단 시스템과 연계하여, 챗봇의 사고 상황 분석 결과를 UI에 자연스럽게 연결하는 경험을 통해 Django 웹 서비스의 흐름을 심도 있게 이해할 수 있었다.
+
+
+
+### 선호
+
+- 파인튜닝부터 Django, AWS를 통한 AI 모델 서빙에 대해서 다양한 시행착오를 겪어보며 실력을 늘릴 수 있는 기회가 되어서 좋았습니다!
