@@ -119,16 +119,13 @@
 
 <br/><br/>
 
-# [화면 정의서🔗](./output/screen%20definition.pdf)
+# 8. [화면 정의서🔗](./output/screen%20definition.pdf)
 
 ## `Main 채팅 화면` ##
 ![image.png](./img/chat.png)
 
 ## `login 화면` ##
 ![image.png](./img/login.png)
-
-## `logout 화면` ##
-![image.png](./img/logout.png)
 
 ## `community 화면` ##
 ![image.png](./img/community.png)
@@ -138,7 +135,7 @@
 
 <br/><br/>
 
-# 12. 수행결과(테스트/시연 페이지)
+# 9. 수행결과(테스트/시연 페이지)
 
 `Image 클릭 시 AWS 배포 port번호로 이동`
 
